@@ -1,0 +1,5 @@
+---
+# vars file for debian-cloudinit
+debian_cloudimage_url: "https://cdimage.debian.org/images/cloud/bookworm/latest/"
+debian_cloudimage_name: "debian-12-generic-amd64.qcow2"
+

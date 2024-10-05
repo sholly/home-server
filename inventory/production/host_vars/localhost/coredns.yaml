@@ -1,0 +1,7 @@
+coredns:
+  directory: "/docker_volumes_prod/coredns"
+  name: "coredns"
+  image: coredns/coredns:latest
+  network: prod1
+  ip: "172.31.2.10"
+

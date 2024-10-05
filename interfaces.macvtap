@@ -1,0 +1,84 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# Primary 
+allow-hotplug enp1s0
+iface enp1s0 inet manual
+auto prod1
+iface prod1 inet static
+  address 172.31.7.60
+  netmask 255.255.255.0
+  gateway 172.31.7.1
+  dns-nameservers 1.1.1.1 4.4.4.4
+  # before up
+  pre-up ip link add prod1 link enp1s0 type macvlan mode bridge
+  post-down ip link del prod1
+
+
+# Macvlan container networks
+allow-hotplug enp2s0
+iface enp2s0 inet manual 
+auto mvlanprod2 
+iface mvlanprod2 inet static 
+  address 192.168.22.2
+  netmask 255.255.255.0
+  dns-nameservers 1.1.1.1 4.4.4.4
+  dns-search lab.internal
+  pre-up ip link add link enp2s0 name mvlanprod2 type macvlan mode bridge
+  post-up ip route del 192.168.22.0/24
+  post-up ip route add 192.168.22.0/24  dev enp2s0 src 192.168.22.2  table prod
+  post-up ip route add default via 192.168.22.1 dev enp2s0 table prod
+  post-up ip rule add from 192.168.22.2/32 table prod
+  post-up ip rule add to 192.168.22.2/32  table prod         
+  post-down ip route del 192.168.22.0/24 table prod
+  post-down ip route del default table prod
+  post-down ip link del mvlanprod2
+
+allow-hotplug enp3s0
+iface enp3s0 inet manual 
+auto mvlandev3 
+iface mvlandev3 inet static 
+  address 192.168.23.2
+  netmask 255.255.255.0
+  dns-nameservers 1.1.1.1 4.4.4.4
+  dns-search lab.internal
+  pre-up ip link add link enp3s0 name mvlandev3 type macvlan mode bridge
+  post-up ip route del 192.168.23.0/24
+  post-up ip route add 192.168.23.0/24  dev enp3s0 src 192.168.23.2  table dev
+  post-up ip route add default via 192.168.23.1 dev enp3s0 table dev
+  post-up ip rule add from 192.168.23.2/32 table dev
+  post-up ip rule add to 192.168.23.2/32  table dev         
+  post-down ip route del 192.168.23.0/24 table dev
+  post-down ip route del default table dev
+  post-down ip link del mvlandev3
+
+
+allow-hotplug enp4s0
+iface enp4s0 inet static 
+  address 192.168.24.2
+  netmask 255.255.255.0
+  network 192.168.24.0
+  #broadcast 192.168.24.255
+  #bridge_ports enp4s0
+  #bridge_stp off
+  #bridge_fd 0
+  #bridge_maxwait 0
+  dns-nameservers 1.1.1.1 4.4.4.4
+  dns-search lab.internal
+  pre-up ip link add link enp4s0 name vm4 type macvtap mode bridge
+  pre-up ip link set vm4 up 
+  #post-up ip route del 192.168.24.0/24
+  #post-up ip route add 192.168.24.0/24  dev enp4s0 src 192.168.24.2  table vm
+  #post-up ip route add default via 192.168.24.1 dev enp4s0 table vm
+  #post-up ip rule add from 192.168.24.2/32 table vm
+  #post-up ip rule add to 192.168.24.2/32  table vm         
+  #post-down ip route del 192.168.24.0/24 table vm
+  #post-down ip route del default table vm
+  post-down ip link set vm4 down
+  post-down ip link del vm4

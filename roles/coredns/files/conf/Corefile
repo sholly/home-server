@@ -1,0 +1,19 @@
+
+lab.internal:53 {
+    file /root/lab.internal.db
+    log
+    errors
+}
+ocp4.lab.internal:53 {
+    #forward . 172.31.7.10
+    file /root/ocp4.lab.internal.db
+}
+apps.ocp4.lab.internal:53 {
+    file /root/apps.ocp4.lab.internal.db
+}
+.:53 {
+    forward . 172.31.2.11
+    cache 900
+    log
+    errors
+}

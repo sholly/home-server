@@ -1,0 +1,16 @@
+wireguard_docker:
+  directory: "/docker_volumes_prod/wireguard-docker"
+  name: wireguard
+  image: lscr.io/linuxserver/wireguard:latest
+  restart_policy: unless-stopped
+  network: prod1
+  ip: 172.31.8.125
+  pgid: 1000
+  puid: 1000
+  tz: "America/Denver"
+  serverurl: "zeus.lab.internal"
+  serverport: 53820
+  peers: "work1,work2,personal,phone,tablet"
+  peerdns: 172.31.222.1, 172.31.222.2
+  allowedips: "0.0.0.0/0"
+

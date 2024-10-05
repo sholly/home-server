@@ -1,0 +1,26 @@
+calibre:
+  config_directory: "/docker_volumes_prod/calibre/config"
+  uploads_directory: "/docker_volumes_prod/calibre/uploads"
+  plugins_directory: "/docker_volumes_prod/calibre/plugins"
+  library_directory: "/data/Calibre_Library"
+  library_subdirectory: "/data/Calibre_Library/Calibre Library"
+  zeusbooks_directory: "/data/Books"
+  name: calibre
+  image: ghcr.io/linuxserver/calibre
+  prod_network: prod1
+  ip: 172.31.2.23
+  ebook_network: ebooks
+  restart_policy: unless-stopped
+  network: prod1
+calibre_web:
+  config_directory: "/docker_volumes_prod/calibre/calibre-web"
+  books_directory: "/data/Calibre_Library"
+  library_directory: "/data/Calibre_Library"
+  zeusbooks_directory: "/data/Books"
+  name: calibre-web
+  image: ghcr.io/linuxserver/calibre-web
+  prod_network: prod1
+  ip: 172.31.2.24
+  ebook_network: ebooks
+  restart_policy: unless-stopped
+  network: prod1

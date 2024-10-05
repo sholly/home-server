@@ -1,0 +1,7 @@
+---
+- name: restart networking
+  become: True
+  ansible.builtin.service:
+    name: networking
+    state: restarted
+    enabled: yes

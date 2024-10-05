@@ -1,0 +1,7 @@
+plex:
+  directory: "/docker_volumes_prod/plex"
+  name: "plex"
+  image: plexinc/pms-docker:1.40.4.8679-424562606
+  network: prod1
+  ip: "172.31.8.103"
+

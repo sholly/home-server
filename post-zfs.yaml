@@ -1,0 +1,8 @@
+---
+#- import_playbook: zfs.yaml
+- import_playbook: git-home.yaml
+- import_playbook: docker.yaml
+- import_playbook: kvm.yaml
+- import_playbook: samba.yaml
+- import_playbook: ups-nut.yaml
+- import_playbook: sudo.yaml

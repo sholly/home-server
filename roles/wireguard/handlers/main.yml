@@ -1,0 +1,13 @@
+---
+# handlers file for wireguard
+- name: netplan apply 
+  become: True
+  ansible.builtin.command: netplan apply 
+  async: 45
+  poll: 0
+- name: restart nftables
+  become: True
+  ansible.builtin.service: 
+    name: nftables
+    state: restarted
+

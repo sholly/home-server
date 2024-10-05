@@ -1,0 +1,55 @@
+---
+# tasks file for backups
+- name: make backups log directory
+  become: True
+  ansible.builtin.file: 
+    path: "{{ backups.log_directory }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+- name: process home_directory_backup script template
+  become: True
+  ansible.builtin.template: 
+    src: templates/home_directory_backup.sh.j2
+    dest: /usr/local/bin/home_directory_backup.sh
+    owner: root
+    group: root
+    mode: 0755
+- name: process home_directory_backup cronjob template
+  become: True
+  ansible.builtin.template: 
+    src: templates/home_directory_backup.cron.j2
+    dest: /etc/cron.d/home_directory_backup
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart cron
+- name: make services backup directories
+  become: True
+  ansible.builtin.file: 
+    path: "{{ backups.services_backups }}/{{ item }}"
+    state: directory
+    owner: ansible
+    group: zfsadmin
+    mode: 0755
+  with_items: "{{ backups.services }}"
+- name: process services scripts
+  become: True
+  ansible.builtin.template: 
+    src: "templates/{{ item.key }}.sh.j2"
+    dest: "/usr/local/bin/{{ item.key }}.sh"
+    owner: root
+    group: root
+    mode: 0755
+  with_items: "{{ backups.services | dict2items }}"
+- name: process services cronjob templates
+  become: True
+  ansible.builtin.template: 
+    src: "templates/service.cron.j2"
+    dest: "/etc/cron.d/{{ item.key }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: "{{ backups.services  | dict2items }}"
+  notify: restart cron

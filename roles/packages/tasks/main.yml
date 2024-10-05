@@ -1,0 +1,41 @@
+---
+- name: Add buster-backports
+  become: True
+  ansible.builtin.lineinfile: 
+    path: /etc/apt/sources.list
+    insertafter: EOF
+    line: deb http://deb.debian.org/debian bullseye-backports main contrib non-free
+- name: apt update
+  become: True
+  command: |
+    sudo apt update
+- name: Install packages
+  become: true
+  ansible.builtin.apt:
+    name:  " {{ item }} "
+    force_apt_get: yes
+    state: latest
+    update_cache: yes
+  with_items: "{{ packages }}"
+- name: Install zfs using backports
+  become: true
+  ansible.builtin.apt:
+    name: zfsutils-linux
+    state: present
+    default_release: bullseye-backports
+- name: Install nvidia-driver using backports
+  become: true
+  ansible.builtin.apt:
+    name: nvidia-driver
+    state: present
+    default_release: bullseye-backports
+- name: Blacklist nouveau
+  become: True
+  ansible.builtin.copy: 
+    src: files/blacklist-nouveau.conf
+    dest: /etc/modprobe.d/blacklist.nouveau.conf
+    force: true
+      #- name: update initramfs
+      #  become: True
+      #  command: |
+      #    update-initramfs -u 

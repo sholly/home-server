@@ -1,0 +1,6 @@
+[local]
+localhost	ansible_connection=local
+
+#[wireguard]
+#wireguard56	ansible_connection=ssh	ansible_user=ansible
+

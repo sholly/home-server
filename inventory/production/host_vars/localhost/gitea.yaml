@@ -1,0 +1,25 @@
+gitea:
+  db_network_mode: "container:gitea"
+  private_network: "giteainternal"
+  network: prod1
+  ip: 172.31.2.15
+  volume_owner: "ansible"
+  volume_mode: "0755"
+  timezone: "America/Denver"
+  volume: "/docker_volumes_prod/gitea/data"
+  volume_certs: "/docker_volumes_prod/gitea/certs"
+  backup_volume: "/data/BackupServices/gitea/"
+  backup_tmp: "/docker_volumes_prod/gitea/backup"
+  dbtype: "postgres"
+  postgresqlname: "gitea-postgresql"
+  postgresqlvolume: "/docker_volumes_prod/gitea-postgresql/data"
+  postgresqlimage: postgres:14
+  postgresqlhost: "gitea-postgresql:5432"
+  postgresqldbname: gitea
+  name: gitea
+  image: gitea/gitea:1.22.2
+  domain: "git.lab.internal"
+  port: 443
+  protocol: https
+  cert_file: "/certs/cert.pem"
+  key_file: "/certs/key.pem"

@@ -1,0 +1,28 @@
+@  3600  IN  SOA  ns1.lab.internal.  root.lab.internal.  (
+   2019041900
+   3600
+   600
+   604800
+   600 )
+   3600  IN  NS  ns1.lab.internal.
+   3600  IN  NS  ns2.lab.internal.
+
+ns1 	 IN  A	172.31.10.10
+ns2 	 IN  A	172.31.2.10
+adguard1 IN  A	172.31.10.11
+adguard2 IN  A	172.31.2.11
+zeus 	 IN  A	172.31.2.2
+pan 	 IN  A	172.31.50.2
+ares 	 IN  A	172.31.40.2
+nyx 	 IN  A	172.31.7.2
+hera 	 IN  A	172.31.1.42
+zuul 	 IN  A	172.31.8.2
+ocp4helper 	 IN  A	172.31.7.10
+unifi 	 IN  A	172.31.50.3
+jellyfin 	 IN  A	172.31.2.4
+plex 	 IN  A	172.31.2.5
+gnucash 	 IN  A	172.31.2.3
+git 	 IN  A	172.31.2.15
+heimdall IN  A	172.31.2.20
+dash	 IN  A	172.31.2.20
+arr      IN  A 	172.31.3.69

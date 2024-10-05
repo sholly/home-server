@@ -1,0 +1,8 @@
+<network>
+  <name>{{ item.value.ifacev }}</name>
+  <forward mode="bridge">
+    <interface dev="{{ item.value.iface }}"/>
+  </forward>
+</network>
+
+

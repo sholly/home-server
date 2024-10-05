@@ -1,0 +1,40 @@
+---
+# tasks file for adguard
+- name: make adguard conf dir
+  become: True
+  file: 
+    path: "{{ adguard.directory }}/conf"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: make adguard work dir
+  become: True
+  file: 
+    path: "{{ adguard.directory }}/work"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: template out config
+  become: True
+  ansible.builtin.template: 
+    src: templates/AdGuardHome.yaml.j2
+    dest: "{{ adguard.directory }}/conf/AdGuardHome.yaml"
+    owner: bobbytables
+    group: bobbytables
+    mode: '0644'
+- name: start adguard
+  become: True
+  docker_container: 
+    name: "{{ adguard.name }}"
+    image: "{{ adguard.image }}"
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ adguard.directory }}/conf:/opt/adguardhome/conf"
+      - "{{ adguard.directory }}/work:/opt/adguardhome/work"
+    state: started
+    purge_networks: true
+    networks:   
+      - name: "{{ adguard.network }}"
+        ipv4_address: "{{ adguard.ip }}"

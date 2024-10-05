@@ -1,0 +1,8 @@
+sftpgo:
+  data_directory: "/docker_volumes_prod/sftpgo"
+  home_directory: "/docker_volumes_prod/sftpgo"
+  name: "sftpgo"
+  image: ghcr.io/drakkan/sftpgo:v2.5.6
+  puid: "1001"
+  pgid: "1001"
+  network_mode: container:gluetunprotonvpn

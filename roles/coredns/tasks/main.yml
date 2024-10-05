@@ -1,0 +1,30 @@
+---
+# tasks file for coredns
+- name: make coredns dir
+  become: True
+  file: 
+    path: "{{ coredns.directory }}/conf"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: copy config
+  become: True
+  copy: 
+    src: files/conf/
+    dest: "{{ coredns.directory }}/conf"
+    force: true
+- name: start coredns
+  become: True
+  docker_container: 
+    name: "{{ coredns.name }}"
+    image: "{{ coredns.image }}"
+    entrypoint: /coredns -conf /root/Corefile
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ coredns.directory }}/conf:/root"
+    state: started
+    purge_networks: true
+    networks:   
+      - name: "{{ coredns.network }}"
+        ipv4_address: "{{ coredns.ip }}"

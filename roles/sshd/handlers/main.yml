@@ -1,0 +1,9 @@
+---
+# handlers file for sshd
+- name: Restart sshd
+  become: True
+  service: 
+    name: sshd
+    state: restarted
+    enabled: yes
+  listen: "start sshd"

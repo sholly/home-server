@@ -1,0 +1,101 @@
+mqtt:
+  enabled: false
+cameras:
+  {{ frigate.cam_name }}: # <------ Name the camera
+    enabled: true
+    onvif:
+      host: {{ frigate.cam_ip }}
+      port: 80
+      user: {{ service_secrets.frigate.cam_user }}
+      password: {{ service_secrets.frigate.cam_password }}
+      autotracking:
+        enabled: True
+        calibrate_on_startup: False
+        track:
+          - dog
+          - cat
+          - animal
+        required_zones:
+          - livingroom
+    ffmpeg:
+      inputs:
+        #- path: rtsp://{{ service_secrets.frigate.cam_user }}:{{ service_secrets.frigate.cam_password }}@{{ frigate.cam_ip }}:554/cam/realmonitor?channel=1&subtype=0 # <----- The stream you want to use for detection
+        #- path: rtsp://{{ service_secrets.frigate.cam_user }}:{{ service_secrets.frigate.cam_password }}@{{ frigate.cam_ip }}:554/cam/realmonitor?channel=1&subtype=1 # <----- The stream you want to use for detection subtype 1 is low res
+        - path: rtsp://{{ service_secrets.frigate.cam_user }}:{{ service_secrets.frigate.cam_password }}@{{ frigate.cam_ip }}:554/live # <----- The stream you want to use for detection subtype 1 is low res
+          roles:
+            - detect
+        - path: rtsp://{{ service_secrets.frigate.cam_user }}:{{ service_secrets.frigate.cam_password }}@{{ frigate.cam_ip }}:554/cam/realmonitor?channel=1&subtype=0 # <----- The stream you want to use for recording
+          roles:
+            - record
+            - audio
+    detect:
+      enabled: true # <---- disable detection until you have a working camera feed
+      width: 1280
+      height: 720
+      fps: 5
+    motion:
+      threshold: 17
+      contour_area: 8
+      improve_contrast: 'false'
+      mask: 0.898,0.015,0.79,0.013,0.7,0.014,0.703,0.102,0.837,0.111,0.975,0.104,0.979,0.012
+    zones:
+      livingroom:
+        coordinates: 0.008,0.093,0.992,0.126,0.999,0.98,0.004,0.988
+        loitering_time: 0
+record:
+  enabled: true
+  expire_interval: 90
+  retain:
+    days: {{ frigate.record_retain }}
+    mode: {{ frigate.record_mode }}
+  events:
+    retain:
+      default: {{ frigate.record_events_retain }}
+      mode: {{ frigate.record_events_mode }}
+detectors:
+  {{ frigate.detector }}:
+    type: {{ frigate.detector_type }}
+model:
+  path: {{ frigate.model_path }}
+  input_tensor: {{ frigate.model_input_tensor }}
+  input_pixel_format: {{ frigate.model_input_pixel_format }}
+  width: {{ frigate.model_width }}
+  height: {{ frigate.model_height }}
+ffmpeg:
+  hwaccel_args: {{ frigate.hwaccel_args }}
+objects:
+  track:
+    - dog
+    - cat
+    - animal
+    - person
+  filters:
+    dog:
+      min_score: 0.4
+      threshold: 0.6
+    person:
+      min_score: 0.5
+      threshold: 0.7
+    cat:
+      min_score: 0.6
+      threshold: 0.7
+review:
+  alerts:
+    labels:
+      - dog
+      - cat
+      - person
+  detections:
+    labels:
+      - animal
+      - dog
+      - cat
+logger:
+  default: info
+  logs:
+    frigate.events: debug
+    frigate.events.maintainer: debug
+    frigate.object_detection: debug
+    detector.zeustensorrt: debug
+    frigate.detectors.plugins.tensorrt: debug
+version: 0.14

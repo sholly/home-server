@@ -1,0 +1,342 @@
+---
+vmname: "zeus-dev"
+dev_kvm_pool: "/data/kvm-nvme2"
+hostname: "zeus"
+domain: "lab.internal"
+os_disk: "/dev/nvme0n1"
+podman_preseed_ip: 172.31.7.2
+mainnetwork:
+  iface: enp7s0f0
+  mvname: prod1
+  netmask: 255.255.255.0
+  address: 172.31.2.2
+  gateway: 172.31.2.1
+  dns1: 1.1.1.1
+  dns2: 4.4.4.4
+  mv_subnet: "172.31.2.0/24"
+  mv_gateway: "172.31.2.1"
+  mv_iprange: "172.31.2.0/24"
+mvnetworks: 
+  mvlanprod2:
+    iface: enp7s0f1
+    ifacemv: mvlanprod2
+    iproute: "172.31.3.0/24"
+    iproutesrc: 172.31.3.2 
+    iproutetable: prod
+    iproutenum: 240
+    iprule: "172.31.3.2/32" 
+    address: "172.31.3.2"
+    gateway: 172.31.3.1
+    dns1: 1.1.1.1
+    dns2: 4.4.4.4
+    dnssearch: lab.internal
+    mvmode: "private"
+    docker_subnet: "172.31.3.0/24" 
+    docker_gateway: "172.31.3.1" 
+    docker_iprange: "172.31.3.0/24"
+  mvlandev3:
+    iface: enp5s0
+    ifacemv: mvlandev3
+    iproute: "172.31.4.0/24"
+    iproutesrc: 172.31.4.2
+    iproutetable: dev
+    iproutenum: 241
+    iprule: "172.31.4.2/32"
+    address: "172.31.4.2"
+    gateway: 172.31.4.1
+    dns1: 1.1.1.1
+    dns2: 4.4.4.4
+    dnssearch: lab.internal
+    mvmode: "bridge"
+    docker_subnet: "172.31.4.0/24"
+    docker_gateway: "172.31.4.1"
+    docker_iprange: "172.31.4.0/24"
+brnetworks:
+  vm4:
+    iface: enp6s0
+    ifacev: vm4
+    iproute: "172.31.5.0/24"
+    iproutesrc: 172.31.5.2
+    iproutetable: vm
+    iproutenum: 242
+    iprule: "172.31.5.2/32"
+    address: 172.31.5.2
+    gateway: 172.31.5.1
+    network: 172.31.5.0
+    broadcast: 172.31.5.255
+    dns1: 1.1.1.1
+    dns2: 4.4.4.4
+    dnssearch: lab.internal
+disks:
+  zeus-dev:
+    size: 100G
+  zfs1: 
+    size: 50G
+  zfs2: 
+    size: 50G
+  zfs3: 
+    size: 50G
+  zfs4: 
+    size: 50G
+  zfs5: 
+    size: 50G
+  zfs6: 
+    size: 50G
+ansible_user: ansible
+packages:
+  - firmware-misc-nonfree
+  - lm-sensors
+  - linux-headers-amd64
+  - qemu-system
+  - libvirt-daemon-system
+  - libguestfs-tools
+  - virtinst
+  - libosinfo-bin
+  - bridge-utils
+  - rsync
+  - tmux
+  - vim
+  - bash-completion
+  - python3
+  - man-db
+  - sanoid
+  # Needed for docker, adding repo
+  - apt-transport-https
+  - ca-certificates
+  - wget
+  - software-properties-common
+  - gnupg2
+  - curl
+  - python3-libvirt
+  - python3-lxml
+  - python3-virtualenv
+  - python3-passlib
+  - smartmontools
+  - tcpdump
+  - iftop
+  - iotop
+  - nload
+  - dnsutils
+  - iperf
+  - unrar
+  - whois
+  - cloud-image-utils
+zpool_name: data
+zpool_mode: raidz2
+zpool_options: 
+  - ashift=12
+zpool_disks: 
+  - /dev/disk/by-id/ata-ST16000NM000J-1
+  - /dev/disk/by-id/ata-ST16000NM000J-2
+  - /dev/disk/by-id/ata-ST16000NM000J-3    
+  - /dev/disk/by-id/ata-ST16000NM000J-4
+  - /dev/disk/by-id/ata-ST16000NM000J-5
+  - /dev/disk/by-id/ata-ST16000NM000J-6
+#not using
+#zpool_cache: /dev/vdh
+zfs_create_pool: true
+zfs_create_datasets: true
+zfs_datasets:
+  Backup:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+      - atime=off
+      - exec=off
+    sanoid_options:
+      - use_template = production
+  Backup.beastie.TimeMachine:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  BackupCritical:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  BackupServices:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Books:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Calibre_Library:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Docker.Prod.Grafana:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Docker.Prod.InfluxDB:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Docker.Prod.Frigate:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+      - quota=600G
+    sanoid_options:
+      - use_template = production
+  Documentaries:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Downloads:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Git:
+    user: git
+    group: git
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  homebackup:
+    user: bobbytables
+    group: bobbytables
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Misc:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Movies:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  MoviesArchive:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Music:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  MusicMaking:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Pictures:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Software:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  TVShows:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+  Video:
+    user: bobbytables
+    group: zfsadmin
+    mode: '0755'
+    options: 
+      - compression=zstd
+    sanoid_options:
+      - use_template = production
+kvm_pools: 
+  kvm_pool: 
+    directory: "/kvm_pool"
+zeusgroups: 
+  - zfsadmin
+  - backupadmin
+  - git
+dockerusers:
+  - ansible
+  - bobbytables
+kvmusers:
+  - ansible
+  - bobbytables
+sudo_nopasswd: 
+  bobbytables: 
+    commands: 
+      - "/usr/bin/zfs send *"
+      - "/usr/bin/zfs recv *"
+  ansible: 
+    commands: 
+      - "/usr/bin/zfs send *"
+      - "/usr/bin/zfs recv *"
+      - "/usr/bin/apt update *"
+      - "/usr/bin/apt -y update *"

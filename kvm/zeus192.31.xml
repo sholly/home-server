@@ -1,0 +1,12 @@
+<network>
+  <name>zeus192.31</name>
+  <forward mode='nat' dev='br0'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='zeus192.31' stp='on' delay='0'/>
+  <ip address='192.168.31.1' netmask='255.255.255.0'>
+  </ip>
+</network>
+

@@ -1,0 +1,5 @@
+{% for key, value in sudo_nopasswd.items()  %}
+{% for cmd in value.commands %}
+{{ key }} ALL = (root) NOPASSWD: {{ cmd }}
+{% endfor %}
+{% endfor %}

@@ -1,0 +1,7 @@
+adguard:
+  directory: "/docker_volumes_prod/adguard"
+  name: "adguard"
+  image: adguard/adguardhome:latest
+  network: prod1
+# development range 172.31.8.97 - 8.127
+  ip: "172.31.8.101"

@@ -1,0 +1,7 @@
+sonarr:
+  directory: "/docker_volumes_prod/sonarr"
+  name: "sonarr"
+  image: lscr.io/linuxserver/sonarr:latest
+  puid: "1001"
+  pgid: "1001"
+  network_mode: container:gluetunprotonvpn

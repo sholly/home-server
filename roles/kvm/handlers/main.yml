@@ -1,0 +1,10 @@
+---
+# handlers file for kvm
+
+- name: Restart kvm
+  become: True
+  service:
+    name: libvirtd
+    state: restarted
+    enabled: yes
+  listen: "start kvm"

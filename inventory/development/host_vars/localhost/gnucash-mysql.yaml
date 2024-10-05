@@ -1,0 +1,10 @@
+gnucash_mysql:
+  directory: "/docker_volumes_prod/gnucash-mysql"
+  conf_directory: "/docker_volumes_prod/gnucash-mysql-conf"
+  name: gnucash-mysql
+  image: mysql:8
+  restart_policy: unless-stopped
+  network: prod1
+  ip: 172.31.8.97
+  #ip: 192.168.22.3
+  tz: "America/Denver"

@@ -1,0 +1,7 @@
+---
+# handlers file for sanoid
+- name: Restart sanoid
+  become: True
+  ansible.builtin.service:
+    name: sanoid
+    state: restarted

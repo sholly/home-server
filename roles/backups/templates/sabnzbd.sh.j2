@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+echo "starting {{ item.key  }} backup at $(date)"
+docker stop {{ item.key }}
+rsync -avug --delete --progress {{ item.value.source_directory }} {{ item.value.backup_directory }}
+docker start {{ item.key }}
+echo "finished {{ item.key }} backup at $(date)"

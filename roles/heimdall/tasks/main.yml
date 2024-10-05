@@ -1,0 +1,32 @@
+---
+- name: Make heimdall dir
+  become: True
+  file: 
+    path: "{{ heimdall.directory }}"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Make heimdall dir config
+  become: True
+  file: 
+    path: "{{ heimdall.directory }}/config"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Start heimdall
+  docker_container: 
+    name: "{{ heimdall.name }}"
+    env:
+      PUID: "{{ heimdall.puid }}"
+      PGID: "{{ heimdall.pgid }}"
+    image: "{{ heimdall.image }}"
+    restart_policy: unless-stopped
+    state: started
+    purge_networks: true
+    networks:
+      - name: "{{ heimdall.network }}"
+        ipv4_address: "{{ heimdall.ip }}"
+    volumes:
+      - "{{ heimdall.directory }}/config:/config"

@@ -1,0 +1,12 @@
+---
+# tasks file for sshd
+- name: Copy sshd_config
+  become: True
+  ansible.builtin.copy: 
+    src: files/sshd_config
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
+  notify: "start sshd"
+

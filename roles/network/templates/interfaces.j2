@@ -1,0 +1,58 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# Primary 
+allow-hotplug {{ mainnetwork.iface }}
+iface {{ mainnetwork.iface }} inet manual
+auto {{ mainnetwork.mvname }}
+iface {{ mainnetwork.mvname }} inet static
+  address {{ mainnetwork.address }}
+  netmask 255.255.255.0
+  gateway {{ mainnetwork.gateway }}
+  dns-nameservers {{ mainnetwork.dns1 }} {{ mainnetwork.dns2 }}
+  # before up
+  pre-up ip link add {{ mainnetwork.mvname }} link {{ mainnetwork.iface }} type macvlan mode bridge
+  post-down ip link del {{ mainnetwork.mvname }}
+
+
+# Macvlan container networks
+{% for key, value in mvnetworks.items() %}
+allow-hotplug {{ value.iface}}
+iface {{ value.iface }} inet manual 
+auto {{ value.ifacemv }} 
+iface {{ value.ifacemv }} inet static 
+  address {{ value.address }}
+  netmask 255.255.255.0
+  dns-nameservers {{ value.dns1 }} {{ value.dns2 }}
+  dns-search {{ value.dnssearch }}
+  pre-up ip link add link {{ value.iface }} name {{ value.ifacemv }} type macvlan mode {{ value.mvmode }}
+  post-up ip route del {{ value.iproute }}
+  post-up ip route add {{ value.iproute }}  dev {{ value.iface }} src {{ value.iproutesrc }}  table {{ value.iproutetable }}
+  post-up ip route add default via {{ value.gateway }} dev {{ value.iface }} table {{ value.iproutetable }}
+  post-up ip rule add from {{ value.iprule }} table {{ value.iproutetable }}
+  post-up ip rule add to {{ value.iprule }}  table {{ value.iproutetable }}         
+  post-down ip route del {{ value.iproute }} table {{ value.iproutetable }}
+  post-down ip route del default table {{ value.iproutetable }}
+  post-down ip link del {{ value.ifacemv }}
+
+{% endfor %}
+
+{% for key, value in brnetworks.items() %}
+allow-hotplug {{ value.iface}}
+iface {{ value.iface }} inet static 
+  address {{ value.address }}
+  netmask 255.255.255.0
+  network {{ value.network }}
+  dns-nameservers {{ value.dns1 }} {{ value.dns2 }}
+  dns-search {{ value.dnssearch }}
+  pre-up ip link add link {{ value.iface }} name {{ value.ifacev }} type macvtap mode bridge
+  pre-up ip link set {{ value.ifacev }} up
+  post-down ip link set {{ value.ifacev }} down
+  post-down ip link del {{ value.ifacev }}
+{% endfor %}

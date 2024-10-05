@@ -1,0 +1,32 @@
+---
+# tasks file for gnucash-postgres
+- name: debug vars
+  ansible.builtin.debug:
+    msg: "{{ gnucash_postgres }}"
+- name: "create postgres data directory"
+  become: True
+  ansible.builtin.file:
+    path: "{{ gnucash_postgres.directory }}"
+    state: directory
+    owner: bobbytables
+    group: zfsadmin
+    mode: 0755
+- name: Start Postgres
+  become: True
+  docker_container:
+    name: "{{ gnucash_postgres.name }}"
+    image: "{{ gnucash_postgres.image }}"
+    restart_policy: "{{ gnucash_postgres.restart_policy }}"
+    networks:
+      - name: "{{ gnucash_postgres.network }}"
+        ipv4_address: "{{ gnucash_postgres.ip }}"
+    purge_networks: true
+    env: 
+      TZ: "{{ gnucash_postgres.tz }}"
+      POSTGRES_USER: "{{ service_secrets.gnucash_postgres.dbuser }}"
+      POSTGRES_PASSWORD: "{{ service_secrets.gnucash_postgres.dbpassword }}"
+      POSTGRES_DATABASE: "{{ service_secrets.gnucash_postgres.dbname }}"
+      POSTGRES_ROOT_PASSWORD: "{{ service_secrets.gnucash_postgres.dbpassword }}"
+    volumes:
+      - "{{ gnucash_postgres.directory }}:/var/lib/postgresql/data"
+    state: started

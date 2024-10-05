@@ -1,0 +1,61 @@
+---
+- name: Create VM
+  block: 
+    - name: Debug hostvars
+      ansible.builtin.debug: 
+        var:  hostvars[item.key]
+    - name: Debug item
+      ansible.builtin.debug: 
+        var: item
+    - name: Copy cloud image to VM image
+      ansible.builtin.copy: 
+        src: "{{ kvm_pool }}/{{ debian_cloudimage_name }}" 
+        dest: "{{ kvm_pool }}/{{ item.key }}.qcow2"
+    - name: Resize VM image
+      ansible.builtin.command: 
+        cmd: "/usr/bin/qemu-img resize {{ kvm_pool }}/{{ item.key }}.qcow2 {{item.value['vm_disksize'] }}"
+    - name: create temp directory for cloudinit localds command
+      ansible.builtin.tempfile: 
+        state: directory
+        suffix: vm_cloudinit
+      register: vm_tempdir
+    - name: Debug tempdir
+      ansible.builtin.debug: 
+        var: vm_tempdir
+    - name: Process cloudinit network template
+      ansible.builtin.template: 
+        src: templates/network-config-v2.yaml.j2
+        dest: "{{ vm_tempdir.path }}/network-config-v2.yaml"
+    - name: Process cloudinit user data
+      ansible.builtin.template: 
+        src: templates/user-data.yaml.j2
+        dest: "{{ vm_tempdir.path }}/user-data.yaml"
+    - name: Run cloud-localds to process network and user data. 
+      ansible.builtin.command: 
+        cmd: "/usr/bin/cloud-localds -v --network-config=network-config-v2.yaml {{ kvm_pool}}/{{ item.key }}-seed.img user-data.yaml"
+        chdir: "{{ vm_tempdir.path }}"
+        creates: "{{ kvm_pool }}/{{ item.key }}-seed.img"
+    - name: Define VM from template
+      community.libvirt.virt: 
+        command: define
+        xml: "{{ lookup('template', 'templates/debian-cloudinit.xml.j2') }}"
+        uri: "qemu:///system"
+    - name: Start VM
+      community.libvirt.virt: 
+        name: "{{ item.key }}"
+        state: running
+        uri: "qemu:///system"
+    - name: Autostart VM
+      community.libvirt.virt: 
+        name: "{{ item.key }}"
+        autostart: true
+    - name: Debug IP address
+      ansible.builtin.debug: 
+        var: "{{ item.value.vm_address.split('/')[0] }}"
+    - name: Wait for VM ssh to be up 
+      ansible.builtin.wait_for: 
+        host: "{{ item.value.vm_address.split('/')[0] }}"
+        port: 22
+        delay: 25
+        state: started
+  when: "item.key not in existing_vms.list_vms" 

@@ -1,0 +1,96 @@
+---
+# tasks file for wireguard
+- name: Apt update
+  become: True
+  ansible.builtin.command: |
+    sudo apt update
+- name: Install packages
+  become: True
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    force_apt_get: yes
+    state: latest
+    update_cache: yes
+  with_items: "{{ wg_packages }}"
+
+- name: enable nftables
+  become: True
+  ansible.builtin.service: 
+    name: nftables
+    enabled: yes
+
+- name: start nftables
+  become: True
+  ansible.builtin.service: 
+    name: nftables
+    state: started
+
+- name: make /etc/wireguard
+  become: True
+  ansible.builtin.file: 
+    path: /etc/wireguard
+    state: directory
+    mode: '0700'
+- name: Generate wireguard private key
+  become: True
+  ansible.builtin.shell: 
+    cmd: wg genkey | tee private.key 
+    chdir: /etc/wireguard
+    creates: /etc/wireguard/private.key
+- name: Generate wireguard public key
+  become: True
+  ansible.builtin.shell: 
+    cmd: cat private.key | wg pubkey > public.key
+    chdir: /etc/wireguard
+    creates: /etc/wireguard/public.key
+- name: Register private key
+  become: True
+  ansible.builtin.shell: 
+    cmd: cat /etc/wireguard/private.key
+  register: register_privatekey
+
+- name: Register public key
+  become: True
+  ansible.builtin.shell: 
+    cmd: cat /etc/wireguard/public.key
+  register: wg_publickey
+
+- name: debug public key
+  ansible.builtin.debug: 
+    var: wg_publickey
+
+- name: debug private key
+  ansible.builtin.debug: 
+    var: register_privatekey
+
+- name: write wireguard netplan template
+  become: True
+  ansible.builtin.template:
+    src: templates/60-wireguard-ansible.yaml.j2
+    dest: /etc/netplan/60-wireguard-ansible.yaml
+    owner: root
+    group: wheel
+    mode: 0700
+  notify: netplan apply 
+
+- name: template out nftables.conf
+  become: True
+  ansible.builtin.template: 
+    src: templates/nftables.conf.j2
+    dest: /etc/nftables.conf 
+    owner: root
+    group: wheel
+    mode: '0700'
+  notify: restart nftables
+
+- name: sysctl net.ipv4.ip_forward to 1
+  become: True
+  ansible.builtin.command: sysctl net.ipv4.ip_forward=1
+
+- name: sysctl net.ipv4.ip_forward in /etc/sysctl.conf
+  become: True
+  ansible.builtin.lineinfile: 
+    path: /etc/sysctl.conf
+    regexp: '^net.ipv4.ip_forward=1$'
+    line: net.ipv4.ip_forward=1
+

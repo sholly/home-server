@@ -1,0 +1,6 @@
+---
+- import_playbook: network.yaml
+- import_playbook: users.yaml
+- import_playbook: sshd.yaml
+- import_playbook: packages.yaml
+  #- import_playbook: zfs.yaml

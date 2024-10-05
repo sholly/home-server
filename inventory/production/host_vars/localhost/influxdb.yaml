@@ -1,0 +1,11 @@
+influxdb:
+  config_directory: "/docker_volumes_prod/influxdb/config"
+  data_directory: "/data/Docker.Prod.InfluxDB/data"
+  name: "influxdb"
+  image: influxdb:2
+  puid: "1001"
+  pgid: "1001"
+  network: "prod1"
+  ip: 172.31.2.21
+  org: "unixnerd"
+  bucket: "opnsense"

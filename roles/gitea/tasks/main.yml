@@ -1,0 +1,110 @@
+---
+# Tasks
+- name: gitea private network
+  docker_network: 
+    name: "{{ gitea.private_network }}"
+    state: present
+- name: Make gitea postgresql dir
+  become: True
+  file: 
+    path: "{{ gitea.postgresqlvolume }}"
+    owner: "{{ gitea.volume_owner }}"
+    group: "{{ gitea.volume_owner }}"
+    mode: "{{ gitea.volume_mode }}"
+    state: directory
+- name: Start gitea postgresql
+  become: True
+  docker_container: 
+    name: "{{ gitea.postgresqlname }}"
+    image: "{{ gitea.postgresqlimage }}"
+    restart_policy: unless-stopped
+    #network_mode: "{{gitea.db_network_mode }}"
+    purge_networks: true
+    networks: 
+      - name: "{{ gitea.private_network }}"
+    env:
+        TZ: "America/Denver"
+        POSTGRES_USER: "{{ service_secrets.gitea.postgresqluser }}"
+        POSTGRES_PASSWORD: "{{ service_secrets.gitea.postgresqlpassword }}"
+        POSTGRES_DATABASE: "{{ gitea.postgresqldbname }}"
+    volumes: 
+      - "{{ gitea.postgresqlvolume }}:/var/lib/postgresql/data"
+      - "{{ gitea.backup_volume }}:/backup"
+    state: started
+- name: Make gitea dir
+  become: True
+  file: 
+    path: "{{ gitea.volume }}"
+    state: directory
+    owner: "{{ gitea.volume_owner }}"
+    group: "{{ gitea.volume_owner }}"
+    mode: "{{ gitea.volume_mode }}"
+- name: Make gitea certs dir
+  become: True
+  file: 
+    path: "{{ gitea.volume_certs }}"
+    state: directory
+    owner: "{{ gitea.volume_owner }}"
+    group: "{{ gitea.volume_owner }}"
+    mode: "{{ gitea.volume_mode }}"
+- name: Make gitea backup dir
+  become: True
+  file: 
+    path: "{{ gitea.backup_volume }}"
+    state: directory
+    owner: "{{ gitea.volume_owner }}"
+    group: "{{ gitea.volume_owner }}"
+    mode: "{{ gitea.volume_mode }}"
+- name: Check for gitea certs
+  stat: 
+    path: "{{ gitea.volume_certs }}/cert.pem"
+  register: certs_exist
+
+- name: Make gitea certs if needed
+  become: True
+  ansible.builtin.shell: |
+    docker run -w /certs -it \ 
+      --rm -v "{{gitea.volume_certs }}:/certs" \
+      "{{ gitea.image }}"  gitea cert --host "{{ gitea.domain }}"
+  when: not certs_exist.stat.exists
+
+- name: change cert perms
+  become: True
+  ansible.builtin.file: 
+    path: "{{ gitea.volume_certs }}"
+    owner: "{{ gitea.volume_owner }}"
+    group: "{{ gitea.volume_owner }}"
+    recurse: yes
+
+- name: Start gitea 
+  become: True
+  docker_container: 
+    name: "{{ gitea.name }}"
+    image: "{{ gitea.image }}"
+    restart_policy: always
+    env:
+        TZ: "{{ gitea.timezone }}"
+        USER_UID: "1000"
+        USER_GID: "1000"
+        GITEA__database__DB_TYPE: "{{ gitea.dbtype }}"
+        GITEA__database__HOST: "{{ gitea.postgresqlhost }}"
+        GITEA__database__NAME: "{{ gitea.postgresqldbname }}"
+        GITEA__database__USER: "{{ service_secrets.gitea.postgresqluser }}"
+        GITEA__database__PASSWD: "{{ service_secrets.gitea.postgresqlpassword }}"
+        GITEA__server__DOMAIN: "{{ gitea.domain }}"
+        GITEA__server__PROTOCOL: "{{ gitea.protocol }}"
+        GITEA__server__CERT_FILE: "/certs/cert.pem"
+        GITEA__server__KEY_FILE: "/certs/key.pem"
+    volumes: 
+      - "{{ gitea.volume }}:/data"
+      - "{{ gitea.volume_certs }}:/certs"
+      - "{{ gitea.backup_volume }}:/backup"
+      - "{{ gitea.backup_tmp }}:/backuptmp"
+    state: started
+    networks: 
+      - name: "{{ gitea.private_network }}"
+      - name: "{{ gitea.network }}"
+        ipv4_address: "{{ gitea.ip }}"
+    purge_networks: true
+
+

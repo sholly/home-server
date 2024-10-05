@@ -1,0 +1,6 @@
+dnsmasq:
+  directory: /docker_volumes_prod/dnsmasq/
+  name: "dns"
+  image: "bobbytables/dnsmasq:1.0.1"
+  network: prod1
+  ip: "172.31.7.97"

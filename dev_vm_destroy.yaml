@@ -1,0 +1,43 @@
+- hosts: all
+
+  tasks: 
+    - name: Get VM list
+      community.libvirt.virt:
+        command: list_vms
+      register: existing_vms
+      changed_when: no
+
+    - block: 
+      - name: destroy zeus macvlan network
+        community.libvirt.virt_net:
+          command: destroy
+          name: "{{ item.key }}"
+        loop: "{{ lookup('dict', mvnetworks) }}"
+      - name: destroy zeus bridge network
+        community.libvirt.virt_net:
+          command: destroy
+          name: "{{ item.key }}"
+        loop: "{{ query('dict', brnetworks) }}"
+      - name: undefine zeus macvlan network
+        community.libvirt.virt_net:
+          command: undefine
+          name: "{{ item.key }}"
+        loop: "{{ lookup('dict', mvnetworks) }}"
+      - name: undefine zeus bridge network
+        community.libvirt.virt_net:
+          command: undefine
+          name: "{{ item.key }}"
+        loop: "{{ query('dict', brnetworks) }}"
+      - name: remove httpd preseed podman container
+        containers.podman.podman_container:
+          name: zeus-preseed
+          image: docker.io/httpd:bullseye
+          state: absent
+      - name: remove Dev 
+        community.libvirt.virt:
+          name: "{{ vmname }}"
+          command: destroy
+      - name: undefine Dev 
+        command: |
+          virsh undefine {{ vmname }} --remove-all-storage
+      when: "vmname in existing_vms.list_vms"

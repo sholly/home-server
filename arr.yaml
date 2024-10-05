@@ -1,0 +1,5 @@
+---
+- import_playbook: gluetun.yaml
+- import_playbook: sabnzbd.yaml
+- import_playbook: sonarr.yaml
+- import_playbook: radarr.yaml

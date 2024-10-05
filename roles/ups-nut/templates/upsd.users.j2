@@ -1,0 +1,13 @@
+# MONITOR myups@localhost 1 upsmon pass master	(or slave)
+[zeus]
+password = {{ nutzeuspassword }}
+allowfrom = localhost
+actions = set
+instcmds = all
+upsmon master
+
+[nyx]
+password = {{ nutnyxpassword }}
+allowfrom = network
+upsmon slave
+

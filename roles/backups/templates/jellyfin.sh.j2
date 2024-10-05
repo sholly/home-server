@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+echo "starting jellyfin backup at $(date)"
+#docker exec -t jellyfin pg_dumpall -c -U jellyfin |bzip2 > $HOME/jellyfinbackups/jellyfin_postgres_`date '+%m-%d-%Y'`.sql.bz2
+docker stop {{ item.key }}
+#docker exec -t {{ item.key }} pg_dumpall -v -c -U jellyfin | bzip2 > {{ backups.services_backups }}/{{ item.key }}/jellyfin_postgres_`date '+%Y-%m-%d'`.sql.bz2
+rsync -avug --delete --progress {{ jellyfin.directory }} {{ item.value.backup_directory }}
+docker start {{ item.key }}
+echo "finished jellyfin backup at $(date)"

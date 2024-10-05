@@ -1,0 +1,7 @@
+radarr:
+  directory: "/docker_volumes_prod/radarr"
+  name: "radarr"
+  image: lscr.io/linuxserver/radarr:latest
+  puid: "1001"
+  pgid: "1001"
+  network_mode: container:gluetunprotonvpn

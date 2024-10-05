@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "starting home directory backup at `date`"
+rsync -avug --progress "{{ backups.home }}" "{{ backups.home_backup }}"
+echo "finished home directory backup at $(date)"

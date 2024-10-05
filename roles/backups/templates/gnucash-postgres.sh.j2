@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+echo "starting gnucash postgres backup at $(date)"
+#docker exec -t gnucash-postgres pg_dumpall -c -U gnucash |bzip2 > $HOME/gnucashbackups/gnucash_postgres_`date '+%m-%d-%Y'`.sql.bz2
+docker exec -t {{ item.key }} pg_dumpall -v -c -U gnucash | bzip2 > {{ backups.services_backups }}/{{ item.key }}/gnucash_postgres_`date '+%Y-%m-%d'`.sql.bz2
+echo "finised gnucash postgres backup at $(date)"

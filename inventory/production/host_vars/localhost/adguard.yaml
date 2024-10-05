@@ -1,0 +1,6 @@
+adguard:
+  directory: "/docker_volumes_prod/adguard"
+  name: "adguard"
+  image: adguard/adguardhome:latest
+  network: prod1
+  ip: "172.31.2.11"

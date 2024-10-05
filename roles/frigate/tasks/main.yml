@@ -1,0 +1,54 @@
+---
+# tasks file for frigate
+- name: "create Frigate config directory"
+  become: True
+  ansible.builtin.file:
+    path: "{{ frigate.config_directory }}"
+    state: directory
+    owner: bobbytables
+    group: zfsadmin
+    mode: 0755
+- name: "create Frigate data directory"
+  become: True
+  ansible.builtin.file:
+    path: "{{ frigate.data_directory }}"
+    state: directory
+    owner: bobbytables
+    group: zfsadmin
+    mode: 0755
+- name: "copy frigate config template" 
+  become: True
+  ansible.builtin.template:
+    src: templates/config.yaml.j2
+    dest: "{{ frigate.config_directory }}/config.yaml"
+    owner: root
+    group: root
+    mode: 0644
+- name: Start Frigate container
+  become: True
+  docker_container:
+    name: "{{ frigate.name }}"
+    image: "{{ frigate.image }}"
+    restart_policy: "{{ frigate.restart_policy }}"
+    device_requests:
+      - device_ids: 0
+        driver: nvidia
+        capabilities:
+          - gpu
+          - compute
+          - utility
+    networks:
+      - name: "{{ frigate.network }}"
+        ipv4_address: "{{ frigate.ip }}"
+    purge_networks: true
+    env: 
+      FRIGATE_RTSP_PASSWORD: "{{ service_secrets.frigate.rtsp_password }}"
+      YOLO_MODELS: "{{ frigate.yolo_models }}"
+    mounts:
+      - type: tmpfs
+        target: /tmp/cache
+        tmpfs_size: 1G
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "{{ frigate.config_directory }}:/config"
+      - "{{ frigate.data_directory }}:/media/frigate"

@@ -1,0 +1,120 @@
+---
+# tasks file for docker
+- name: Update the apt package index
+  become: yes
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+    force_apt_get: yes
+- name: Add Apt signing key from official docker repo
+  become: yes
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+- name: add docker official repository for Debian Bullseye
+  become: yes
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable
+    state: present
+- name: Add Apt signing key from nvidia container toolkit
+  become: yes
+  apt_key:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    state: present
+- name: add nvidia container toolkit repository for Debian Bullseye
+  become: yes
+  ansible.builtin.copy:
+    src: files/nvidia-container-toolkit.list
+    dest: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+    owner: root
+    group: root
+    mode: 0750
+- name: Index new repo into the cache
+  become: yes
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+    force_apt_get: yes
+- name: actually install docker
+  become: yes
+  vars:
+    pkgs:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - nvidia-container-toolkit
+  apt:
+    name: "{{ pkgs }}"
+    state: latest
+- name: Install python3-docker via pip to get version later than 4.1
+  become: true
+  ansible.builtin.pip:
+    name: docker>=4.3.0
+
+- name: docker enabled
+  become: yes
+  service:
+    name:  docker
+    state: started
+- name: debug macvlan hash
+  become: yes
+  ansible.builtin.debug: 
+    msg: 
+      - "{{ item }}"
+  loop: "{{ mvnetworks | dict2items }}"
+
+- name: Add main docker vlan network
+  become: true
+  docker_network: 
+    name: "{{ mainnetwork.mvname }}"
+    state: present
+    driver: macvlan
+    ipam_config: 
+      - subnet: "{{ mainnetwork.mv_subnet }}"
+        gateway: "{{ mainnetwork.mv_gateway }}"
+        iprange: "{{ mainnetwork.mv_iprange }}"
+    driver_options:
+      parent: "{{ mainnetwork.iface }}"
+
+- name: Add other prod and dev macvlan networks
+  become: true
+  docker_network: 
+    name: "{{ item.key }}"
+    state: present
+    driver: macvlan
+    ipam_config: 
+      - subnet: "{{ item.value.docker_subnet }}"
+        gateway: "{{ item.value.docker_gateway }}"
+        iprange: "{{ item.value.docker_iprange }}"
+    driver_options:
+      parent: "{{ item.value.iface }}"
+      macvlan_mode: "{{ item.value.mvmode }}"
+  loop: "{{ mvnetworks | dict2items }}"
+
+- name: Create docker volume dirs for prod and dev
+  become: true
+  file: 
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  with_items: "{{ docker_volume_dirs }}"
+- name: add users to docker group
+  become: True
+  user: 
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  loop: "{{ dockerusers }}"
+- name: Configure Docker for nvidia-container-toolkit
+  become: True
+  command: |
+    nvidia-ctk runtime configure --runtime=docker
+- name: docker restarted
+  become: yes
+  service:
+    name:  docker
+    enabled: yes
+    state: restarted

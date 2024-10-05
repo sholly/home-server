@@ -1,0 +1,39 @@
+---
+# tasks file for influxdb
+- name: make InfluxDB config directory
+  become: True
+  file: 
+    path: "{{ influxdb.config_directory }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+- name: make InfluxDB data directory
+  become: True
+  file:
+    path: "{{ influxdb.data_directory }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+- name: Start InfluxDB Controller
+  become: True
+  docker_container:
+    name: "{{ influxdb.name }}"
+    image: "{{ influxdb.image }}"
+    restart_policy: unless-stopped
+    networks: 
+      - name: "{{ influxdb.network }}"
+        ipv4_address: "{{ influxdb.ip }}"
+    purge_networks: true
+    env: 
+      TZ: "America/Denver"
+      DOCKER_INFLUXDB_INIT_MODE: "setup"
+      DOCKER_INFLUXDB_INIT_USERNAME: "{{ service_secrets.influxdb.username }}"
+      DOCKER_INFLUXDB_INIT_PASSWORD: "{{ service_secrets.influxdb.password }}"
+      DOCKER_INFLUXDB_INIT_ORG: "{{ influxdb.org }}"
+      DOCKER_INFLUXDB_INIT_BUCKET: "{{ influxdb.bucket }}"
+    volumes: 
+      - "{{ influxdb.config_directory }}:/etc/influxdb2"
+      - "{{ influxdb.data_directory }}:/var/lib/influxdb2"
+    state: started

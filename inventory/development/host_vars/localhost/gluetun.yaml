@@ -1,0 +1,12 @@
+gluetun:
+  directory: "/docker_volumes_prod/gluetun"
+  name: "gluetunprotonvpn"
+  image: qmcgaw/gluetun:latest
+  network: "mvlanprod2"
+  ip: "192.168.22.69"
+  vpn_type: wireguard
+# Now in secrets.yaml
+# vpn_endpoint_ip: "1.2.3.4"
+# vpn_endpoint_port: "51820"
+# vpn_endpoint_public_key: ""
+# vpn_endpoint_private_key: ""

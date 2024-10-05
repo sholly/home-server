@@ -1,0 +1,26 @@
+frigate:
+  config_directory: "/docker_volumes_prod/frigate/config"
+  data_directory: "/data/Docker.Prod.Frigate/"
+  name: frigate
+  image: ghcr.io/blakeblackshear/frigate:stable-tensorrt
+  shm_size: "256mb"
+  restart_policy: unless-stopped
+  network: prod1
+  ip: 172.31.2.16
+  pgid: 1000
+  puid: 1000
+  cam_name: "armcrest_4mp_prohd"
+  cam_ip: "172.31.51.51"
+  detector: "dogiscat"
+  detector_type: "tensorrt"
+  record_retain: 4
+  record_mode: "all"
+  record_events_retain: 30
+  record_events_mode: "motion"
+  yolo_models: "yolov7-640,yolov7-640,yolov7x-640"
+  model_path: "/config/model_cache/tensorrt/yolov7x-640.trt"
+  model_input_tensor: "nchw"
+  model_input_pixel_format: "rgb"
+  model_width: "640"
+  model_height: "640"
+  hwaccel_args: "preset-nvidia-h264"

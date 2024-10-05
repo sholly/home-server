@@ -1,0 +1,36 @@
+samba_packages:
+ - samba
+ - smbclient
+ - cifs-utils
+ - avahi-daemon
+
+sambashares: 
+  Downloads: 
+    path: /data/Downloads
+    readonly: no
+    validusers: bobbytables
+  Movies: 
+    path: /data/Movies
+    readonly: no
+    validusers: bobbytables
+  Music: 
+    path: /data/Music
+    readonly: no
+    validusers: bobbytables
+  MusicMaking: 
+    path: /data/MusicMaking
+    readonly: no
+    validusers: bobbytables
+  Pictures: 
+    path: /data/Pictures
+    readonly: no
+    validusers: bobbytables
+  TVShows: 
+    path: /data/TVShows
+    readonly: no
+    validusers: bobbytables
+  bobbytables: 
+    path: /home/bobbytables/
+    readonly: no
+    validusers: bobbytables
+

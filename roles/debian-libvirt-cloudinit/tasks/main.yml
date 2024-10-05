@@ -1,0 +1,18 @@
+---
+# tasks file for debian-cloudimage
+- name: debug vms
+  ansible.builtin.debug:
+    var: vms
+- name: Get list of VMs
+  community.libvirt.virt:
+    command: list_vms
+  register: existing_vms
+  changed_when: no
+- name: Download debian cloud image
+  ansible.builtin.get_url: 
+    url:  "{{ debian_cloudimage_url }}/{{ debian_cloudimage_name }}"
+    dest: "{{ kvm_pool }}/{{ debian_cloudimage_name }}"
+
+- name: Create VMs 
+  include_tasks: create_vm.yaml
+  loop: "{{ vms | dict2items }}"

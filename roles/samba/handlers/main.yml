@@ -1,0 +1,15 @@
+---
+# handlers file for samba
+- name: restart samba
+  become: True
+  ansible.builtin.service: 
+    name: smbd
+    enabled: yes
+    state: restarted
+# handlers file for samba
+- name: restart avahi
+  become: True
+  ansible.builtin.service: 
+    name: avahi-daemon
+    enabled: yes
+    state: restarted

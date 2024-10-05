@@ -1,0 +1,9 @@
+gnucash_postgres:
+  directory: "/docker_volumes_prod/gnucash-postgres"
+  name: gnucash-postgres
+  image: postgres:16
+  restart_policy: unless-stopped
+  network: prod1
+  ip: 172.31.2.6
+  #ip: 192.168.22.3
+  tz: "America/Denver"

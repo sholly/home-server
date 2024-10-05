@@ -1,0 +1,85 @@
+---
+# tasks file for calibre
+#- name: "Create ebooks network"
+#  become: True
+#  docker_network: 
+#    name: "{{ calibre.ebook_network }}"
+- name: "create calibre config directory"
+  become: True
+  ansible.builtin.file:
+    path: "{{ calibre.config_directory }}"
+    state: directory
+    owner: bobbytables
+    group: zfsadmin
+    mode: 0755
+- name: "create calibre uploads directory"
+  become: True
+  ansible.builtin.file:
+    path: "{{ calibre.uploads_directory }}"
+    state: directory
+    owner: bobbytables
+    group: zfsadmin
+    mode: 0755
+- name: "create calibre plugins directory"
+  become: True
+  ansible.builtin.file:
+    path: "{{ calibre.plugins_directory }}"
+    state: directory
+    owner: bobbytables
+    group: zfsadmin
+    mode: 0755
+- name: "create calibre library directory if needed"
+  become: True
+  ansible.builtin.file:
+    path: "{{ calibre.library_subdirectory }}"
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: 0755
+- name: Start calibre container
+  become: True
+  docker_container:
+    name: "{{ calibre.name }}"
+    image: "{{ calibre.image }}"
+    env:
+      PUID: "1000"
+      PGID: "1000"
+    restart_policy: "{{ calibre.restart_policy }}"
+    networks:
+      - name: "{{ calibre.prod_network }}"
+        ipv4_address: "{{ calibre.ip }}"
+          #- name: "{{ calibre.ebook_network }}"
+    purge_networks: true
+    volumes:
+      - "{{ calibre.config_directory }}:/config"
+      - "{{ calibre.uploads_directory }}:/uploads"
+      - "{{ calibre.plugins_directory }}:/plugins"
+      - "{{ calibre.library_directory }}:/Calibre_Library"
+      - "{{ calibre.zeusbooks_directory }}:/zeusbooks"
+
+- name: "create calibre web  config directory"
+  become: True
+  ansible.builtin.file:
+    path: "{{ calibre_web.config_directory }}"
+    state: directory
+    owner: bobbytables
+    group: zfsadmin
+    mode: 0755
+- name: Start calibre_web container
+  become: True
+  docker_container:
+    name: "{{ calibre_web.name }}"
+    image: "{{ calibre_web.image }}"
+    env:
+      PUID: "1000"
+      PGID: "1000"
+    restart_policy: "{{ calibre_web.restart_policy }}"
+    networks:
+      - name: "{{ calibre_web.prod_network }}"
+        ipv4_address: "{{ calibre_web.ip }}"
+          # - name: "{{ calibre.ebook_network }}"
+    purge_networks: true
+    volumes:
+      - "{{ calibre_web.config_directory }}:/config"
+      - "{{ calibre.library_directory }}:/books"
+      - "{{ calibre.zeusbooks_directory }}:/zeusbooks"

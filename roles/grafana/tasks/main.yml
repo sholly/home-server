@@ -1,0 +1,36 @@
+---
+# tasks file for grafana
+- name: make Grafana config directory
+  become: True
+  file: 
+    path: "{{ grafana.config_directory }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+- name: make Grafana data directory
+  become: True
+  file:
+    path: "{{ grafana.data_directory }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+- name: Start Grafana 
+  become: True
+  docker_container:
+    name: "{{ grafana.name }}"
+    image: "{{ grafana.image }}"
+    restart_policy: unless-stopped
+    networks: 
+      - name: "{{ grafana.network }}"
+        ipv4_address: "{{ grafana.ip }}"
+    purge_networks: true
+    env: 
+      TZ: "America/Denver"
+      GF_SERVER_ROOT_URL: "http://grafana.lab.internal"
+      GF_INSTALL_PLUGINS: "grafana-clock-panel"
+    volumes: 
+      - "{{ grafana.config_directory }}:/etc/grafana2"
+      - "{{ grafana.data_directory }}:/var/lib/grafana2"
+    state: started

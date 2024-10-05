@@ -1,0 +1,38 @@
+---
+# tasks file for gnucash-mysql
+- name: "create Wireguard config directory"
+  become: True
+  ansible.builtin.file:
+    path: "{{ wireguard_docker.directory }}"
+    state: directory
+    owner: bobbytables
+    group: zfsadmin
+    mode: 0755
+- name: Start Wireguard container
+  become: True
+  docker_container:
+    name: "{{ wireguard_docker.name }}"
+    image: "{{ wireguard_docker.image }}"
+    capabilities: 
+      - net_admin
+      - sys_module
+    restart_policy: "{{ wireguard_docker.restart_policy }}"
+    state: started
+    networks:
+      - name: "{{ wireguard_docker.network }}"
+        ipv4_address: "{{ wireguard_docker.ip }}"
+    purge_networks: true
+    env: 
+      TZ: "{{ wireguard_docker.tz }}"
+      PUID: "{{ wireguard_docker.puid }}"
+      PGID: "{{ wireguard_docker.pgid }}"
+      SERVERURL: "{{ wireguard_docker.serverurl }}"
+      SERVERPORT: "{{ wireguard_docker.serverport }}"
+      PEERS: "{{ wireguard_docker.peers }}"
+      PEERDNS: "{{ wireguard_docker.peerdns }}"
+      ALLOWEDIPS: "{{ wireguard_docker.allowedips }}"
+    volumes:
+      - "{{ wireguard_docker.directory }}:/config"
+      - /lib/modules:/lib/modules
+    sysctls:
+      net.ipv4.conf.all.src_valid_mark: 1

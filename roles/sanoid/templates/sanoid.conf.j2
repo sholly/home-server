@@ -1,0 +1,20 @@
+## Ansible-managed sanoid.conf
+
+{% for key, value in zfs_datasets.items() %}
+
+# Dataset: 
+[data/{{ key }}]
+
+	 {% for opt in value.sanoid_options %}
+    {{ opt }}
+         {% endfor %}
+{% endfor %}
+
+[template_production]
+	hourly = 0
+	daily = 30
+        weekly = 12
+	monthly = 6
+	yearly = 0
+	autosnap = yes
+	autoprune = yes

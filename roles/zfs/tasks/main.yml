@@ -1,0 +1,68 @@
+---
+# tasks file for zfs
+- name: Get ZFS pool existence
+  command: zpool list -Ho name {{ zpool_name }}
+  register: result_pool_list
+  ignore_errors: yes
+  changed_when: no
+
+- name: Create ZFS Pool
+  become: True
+  command: >-
+    zpool create -f
+    {{ '-o' if zpool_options else '' }} {{ zpool_options | join(' -o ' ) }}
+    {{ zpool_name }} 
+    {{ zpool_mode }}
+    {{ zpool_disks  | join(' ') }}
+  when: 
+    - result_pool_list.rc == 1
+
+- name: Check for ZFS datasets
+  become: True
+  command: |
+    zfs list {{ zpool_name }}/{{ item.key }}
+  register: zfs_list_results
+  loop: "{{ zfs_datasets | dict2items }}"
+  ignore_errors: True
+
+- name: debug zfs list results
+  ansible.builtin.debug:
+    msg:
+      - "{{ zfs_list_results.results }}"
+
+- name: debug results some more
+  ansible.builtin.debug:
+    msg:
+      - "{{ item.item.value if item.item.value.options is defined  else '' }}"
+      - "{{ '-o' if item.item.value.options is defined else '' }} {{ item.item.value.options if item.item.value.options is defined else '' | join(' -o ' ) }}"
+  with_items: "{{zfs_list_results.results }}"
+
+- name: create ZFS datasets
+  become: True
+  command: >-
+    zfs create 
+    {% if item.item.value.options is defined %}
+       {% for option in item.item.value.options %}
+          -o {{ option }}
+       {% endfor %}
+    {% endif %}
+    {{ zpool_name }}/{{ item.item.key }}
+  with_items: "{{zfs_list_results.results }}"
+  when: (item.rc != 0) and (zfs_create_datasets|default(false)|bool == true)
+    
+- name: Check for ZFS datasets again
+  become: True
+  command: |
+    zfs list {{ zpool_name }}/{{ item.key }}
+  register: zfs_list_results
+  loop: "{{ zfs_datasets | dict2items }}"
+  ignore_errors: True
+
+- name: set ZFS dataset options
+  become: True
+  command: |
+    zfs set 
+    {{ item.item.value.options | join(' ') }} 
+    {{ zpool_name }}/{{ item.item.key }}
+  with_items: "{{ zfs_list_results.results }}"
+  when: (item.rc == 0) and ( item.item.value.options is defined)

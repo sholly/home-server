@@ -1,0 +1,19 @@
+samba_packages:
+ - samba
+ - smbclient
+ - cifs-utils
+
+sambashares: 
+  Downloads: 
+    path: /data/Downloads
+    readonly: no
+    validusers: bobbytables
+  Movies: 
+    path: /data/Movies
+    readonly: no
+    validusers: bobbytables
+  Music: 
+    path: /data/Music
+    readonly: no
+    validusers: bobbytables
+

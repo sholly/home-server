@@ -1,0 +1,37 @@
+---
+# Tasks for gluetun
+- name: Make gluetun dir
+  become: True
+  file: 
+    path: "{{ gluetun.directory }}"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Start gluetun
+  become: True
+  docker_container: 
+    name: "{{ gluetun.name }}"
+    image: "{{ gluetun.image }}"
+    restart_policy: unless-stopped
+    state: started
+    capabilities:
+      - NET_ADMIN
+    purge_networks: true
+    networks:
+      - name: "{{ gluetun.network }}"
+        ipv4_address: "{{ gluetun.ip }}"
+    exposed_ports:
+      - 8080:8080/tcp
+      - 8888:8888/tcp
+      - 8388:8388/tcp
+      - 8388:8388/udp
+    env:
+      VPN_SERVICE_PROVIDER: custom
+      VPN_TYPE: "{{ gluetun.vpn_type }}"
+      VPN_ENDPOINT_IP: "{{ service_secrets.gluetun.vpn_endpoint_ip }}"
+      VPN_ENDPOINT_PORT: "{{ service_secrets.gluetun.vpn_endpoint_port }}"
+      WIREGUARD_PUBLIC_KEY: "{{ service_secrets.gluetun.vpn_endpoint_public_key }}"
+      WIREGUARD_PRIVATE_KEY: "{{ service_secrets.gluetun.vpn_endpoint_private_key }}"
+      WIREGUARD_ADDRESSES: "10.2.0.2/32"
+

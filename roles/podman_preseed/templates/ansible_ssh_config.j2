@@ -1,0 +1,10 @@
+Host zeus
+HostName 172.31.1.2
+User git
+Port 2222
+IdentityFile /home/ansible/.ssh/{{ users.ansible.git_ssh_private_key_name }}
+
+Host github.com
+User git
+IdentityFile /home/ansible/.ssh/{{ users.ansible.github_ssh_private_key_name }}
+

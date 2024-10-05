@@ -1,0 +1,59 @@
+---
+# tasks file for network
+- name: Debug mainnetwork
+  ansible.builtin.debug:
+    msg: 
+      - "{{ hostvars['localhost']['mainnetwork'] }}"
+      - "{{ mainnetwork }}"
+      - "{{ mvnetworks }}"
+- name: add entry to /etc/hosts
+  become: True
+  ansible.builtin.lineinfile: 
+    path: /etc/hosts
+    insertafter: EOF
+    line: 127.0.0.1 {{ hostname }}
+- name: debug template vars
+  ansible.builtin.debug: 
+    msg: "{{ lookup('ansible.builtin.template','./templates/interfaces.j2') }}"
+- name: Install mv route template
+  become: True
+  ansible.builtin.template: 
+    src: templates/route.j2
+    dest: /etc/iproute2/rt_tables.d/{{ item.value.iproutetable }}.conf
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ mvnetworks | dict2items }}"
+  notify: 
+    - restart networking
+- name: Install br route template
+  become: True
+  ansible.builtin.template: 
+    src: templates/route.j2
+    dest: /etc/iproute2/rt_tables.d/{{ item.value.iproutetable }}.conf
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ brnetworks | dict2items }}"
+  notify: 
+    - restart networking
+- name: Install connections template
+  become: True
+  ansible.builtin.template:
+    src: templates/interfaces.j2
+    dest: /etc/network/interfaces
+    owner: root
+    group: root
+    mode: '0644'
+  notify: 
+    - restart networking
+- name: set hostname
+  become: True
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+  notify: 
+    - restart networking
+- name: restart networking
+  become: True
+  service: name=networking state=restarted
+

@@ -1,0 +1,4 @@
+SHELL=/bin/bash
+
+#*/5 * * * * root /usr/local/bin/home_directory_backup.sh >> {{ backups.log_directory }}/home_directory_backup.log 2>&1
+{{ item.value.schedule }} root /usr/local/bin/{{ item.key }}.sh >> {{ backups.log_directory }}/{{ item.key }}.log 2>&1

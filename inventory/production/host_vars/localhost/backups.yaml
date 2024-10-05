@@ -1,0 +1,37 @@
+backups:
+  home: /home/
+  home_backup: /data/homebackup
+  home_backup_schedule: "0 2 * * *"
+  log_directory: /var/log/backups
+  services_backups: "/data/BackupServices/"
+  services:
+    gnucash-postgres:
+      backup_directory: "/data/BackupServices/gnucash-postgres"
+      schedule: "0 2 * * *"
+    gitea:
+      backup_directory: "/data/BackupServices/gitea"
+      backup_temp: "/docker_volumes_prod/gitea/backup/"
+      schedule: "5 2 * * *"
+    adguard:
+      source_directory: "/docker_volumes_prod/adguard"
+      backup_directory: "/data/BackupServices/adguard"
+      schedule: "14 2 * * *"
+    jellyfin:
+      backup_directory: "/data/BackupServices/jellyfin"
+      schedule: "7 2 * * 3,7"
+    sabnzbd:
+      source_directory: "/docker_volumes_prod/sabnzbd"
+      backup_directory: "/data/BackupServices/sabnzbd"
+      schedule: "9 2 * * 1,3,7"
+    sonarr:
+      source_directory: "/docker_volumes_prod/sonarr"
+      backup_directory: "/data/BackupServices/sonarr"
+      schedule: "15 2 * * 1,3,7"
+    radarr:
+      source_directory: "/docker_volumes_prod/radarr"
+      backup_directory: "/data/BackupServices/radarr"
+      schedule: "15 2 * * 1,3,7"
+    heimdall:
+      source_directory: "/docker_volumes_prod/heimdall"
+      backup_directory: "/data/BackupServices/heimdall"
+      schedule: "15 2 * * 1,3,7"

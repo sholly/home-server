@@ -1,0 +1,19 @@
+---
+# tasks file for JellyFit
+- hosts: localhost
+  tasks:
+  - name: Install ntp
+    become: True
+    ansible.builtin.apt: 
+      name: ntp
+      state: present
+  - name: Enable ntp service
+    become: True
+    ansible.builtin.service: 
+      name: ntp
+      enabled: yes
+  - name: Start ntp service
+    become: True
+    ansible.builtin.service: 
+      name: ntp
+      state: started

@@ -1,0 +1,20 @@
+---
+# tasks file for sanoid
+- name: make /etc/sanoid/
+  become: True
+  ansible.builtin.file:
+    path: /etc/sanoid/
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+- name: process sanoid.conf template
+  become: True
+  ansible.builtin.template: 
+    src: templates/sanoid.conf.j2
+    dest: /etc/sanoid/sanoid.conf
+    owner: root
+    group: root
+    mode:  '0644'
+  notify:
+    - Restart sanoid

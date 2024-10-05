@@ -1,0 +1,52 @@
+---
+# tasks file for ups-nut
+- name: Install nut package
+  become: True
+  ansible.builtin.apt: 
+    name: "{{ item }}"
+    force_apt_get: yes
+    state: latest
+    update_cache: yes
+  with_items: "{{ nut_packages }}"
+- name: Copy nut.conf
+  become: True
+  ansible.builtin.copy: 
+    src: files/nut.conf
+    dest: /etc/nut/nut.conf
+    owner: root
+    group: root
+    mode: '0600'
+- name: Copy ups.conf
+  become: True
+  ansible.builtin.copy: 
+    src: files/ups.conf
+    dest: /etc/nut/ups.conf
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Copy upsd.conf
+  become: True
+  ansible.builtin.template: 
+    src: templates/upsd.conf.j2
+    dest: /etc/nut/upsd.conf
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Copy upsd.users template
+  become: True
+  ansible.builtin.template: 
+    src: templates/upsd.users.j2
+    dest: "/etc/nut/upsd.users"
+    owner: root
+    group: root
+    mode: '0600'
+- name: Copy upsmon.conf template
+  become: True
+  ansible.builtin.template: 
+    src: templates/upsmon.conf.j2
+    dest: "/etc/nut/upsmon.conf"
+    owner: root
+    group: root
+    mode: '0600'

@@ -1,0 +1,87 @@
+---
+# tasks file for kvm
+- name: add users to libvirt group
+  become: True
+  user: 
+    name: "{{ item }}"
+    groups: libvirt
+    append: yes
+  loop: "{{ kvmusers }}"
+- name: add users to kvm group
+  become: True
+  user: 
+    name: "{{ item }}"
+    groups: kvm
+    append: yes
+  loop: "{{ kvmusers }}"
+
+- name: "Create kvm pool directories"
+  become: True
+  tags: libvirt
+  file:
+    path: '{{ item.value.directory }}'
+    state: directory
+    mode: '0775'
+    owner: 'ansible'
+    group: 'libvirt'
+  loop: "{{ kvm_pools | dict2items }}"
+- name: "Define kvm storage pool "
+  become: True
+  tags: libvirt
+  community.libvirt.virt_pool:
+    command: define
+    name: "{{ item.key }}"
+    xml: '{{ lookup("template", "templates/kvmpool.xml.j2") }}'
+  loop: "{{ kvm_pools | dict2items}}"
+- name: "Create kvm storage pool "
+  become: True
+  tags: libvirt
+  community.libvirt.virt_pool:
+    command: build
+    state: active
+    name: "{{ item.key }}"
+  loop: "{{ kvm_pools | dict2items}}"
+- name: "Autostart kvm storage pool "
+  become: True
+  tags: libvirt
+  community.libvirt.virt_pool:
+    autostart: yes
+    name: "{{ item.key }}"
+  loop: "{{ kvm_pools | dict2items}}"
+
+- name: "Define kvm bridge network"
+  become: True
+  tags: libvirt
+  community.libvirt.virt_net:
+    command: define
+    name: "{{ item.key }}"
+    xml: '{{ lookup("template", "templates/bridge.xml.j2") }}'
+  loop: "{{ brnetworks | dict2items}}"
+- name: "Create kvm bridge network"
+  become: True
+  tags: libvirt
+  community.libvirt.virt_net:
+    command: create
+    name: "{{ item.value.ifacev }}"
+  loop: "{{ brnetworks | dict2items}}"
+- name: "Autostart kvm bridge network"
+  become: True
+  tags: libvirt
+  community.libvirt.virt_net:
+    autostart: yes
+    name: "{{ item.value.ifacev }}"
+  loop: "{{ brnetworks | dict2items}}" 
+  notify: "start kvm"
+    #- name: "Autostart KVM" 
+    #  become: True
+    #  ansible.builtin.service:
+    #    name: libvirtd
+    #    state: restarted
+    #    enabled: yes
+- name: "Set 4755 on /usr/lib/qemu/qemu-bridge-helper"
+  become: True
+  tags: libvirt
+  ansible.builtin.file: 
+    path: /usr/lib/qemu/qemu-bridge-helper
+    state: touch
+    mode: '0744'

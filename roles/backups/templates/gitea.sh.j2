@@ -1,0 +1,17 @@
+#!/bin/bash
+set -x 
+
+backupdate=$(date '+%Y-%m-%d')
+echo ${backupdate}
+backup_dir_date="{{ item.value.backup_directory }}/${backupdate}"
+echo "starting gitea backup at `date`"
+
+[ -d $backup_dir_date ] || mkdir $backup_dir_date
+
+#docker exec -u git  -w /backup/$backupdate gitea bash -c '/usr/local/bin/gitea dump -c /data/gitea/conf/app.ini'
+docker exec -u git  -w /backuptmp/ gitea bash -c '/usr/local/bin/gitea dump -c /data/gitea/conf/app.ini'
+mv {{ item.value.backup_temp }}/* ${backup_dir_date}/
+
+docker exec  -w /backup/$backupdate gitea-postgresql bash -c 'pg_dump -U gitea gitea > gitea-db-dump-$(date +'%Y-%m-%d').sql '
+
+echo "finished gitea backup at $(date)" 

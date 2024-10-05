@@ -1,0 +1,5 @@
+- hosts: localhost
+  roles:
+  - podman_preseed
+  - dev_vm
+

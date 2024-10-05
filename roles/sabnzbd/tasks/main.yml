@@ -1,0 +1,49 @@
+---
+# Tasks for sabnzbd
+- name: Make sabnzbd dir
+  become: True
+  file: 
+    path: "{{ sabnzbd.directory }}"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Make sabnzbd dir config
+  become: True
+  file: 
+    path: "{{ sabnzbd.directory }}/config"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Make sabnzbd dir downloads
+  become: True
+  file: 
+    path: "{{ sabnzbd.directory }}/downloads/complete"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Make sabnzbd dir incomplete
+  become: True
+  file: 
+    path: "{{ sabnzbd.directory }}/downloads/incomplete"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Start sabnzbd
+  docker_container: 
+    name: "{{ sabnzbd.name }}"
+    image: "{{ sabnzbd.image }}"
+    env:
+      PUID: "{{ sabnzbd.puid }}"
+      PGID: "{{ sabnzbd.pgid }}"
+    restart_policy: unless-stopped
+    state: started
+    purge_networks: true
+    network_mode: "{{ sabnzbd.network_mode }}"
+    volumes:
+      - "{{ sabnzbd.directory }}/config:/config"
+      - "{{ sabnzbd.directory }}/downloads/complete:/downloads"
+      - "{{ sabnzbd.directory }}/downloads/incomplete:/incomplete-downloads"

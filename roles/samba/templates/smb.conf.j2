@@ -1,0 +1,41 @@
+# Ansible managed
+
+[global]
+	server role = standalone server
+	server string = %h Samba Server
+	log file = /var/log/samba/%m
+	log level = 1
+	workgroup = WORKGROUP
+	
+	fruit:aapl = yes
+	fruit:nfs_aces = no
+	fruit:copyfile = no
+	fruit:model = MacSamba
+	inherit permissions = yes
+	multicast dns register = no
+        client max protocol = default
+        client min protocol = SMB2_02
+        server max protocol = SMB3
+        server min protocol = SMB2_02
+	
+		
+[beastie_timemachine]
+	vfs objects = catia fruit streams_xattr
+	fruit:time machine = yes
+	fruit:time machine max size = 2T
+	comment = Beastie Time Machine Backup
+	path = /data/Backup.beastie.TimeMachine
+	available = yes
+	valid users = bobbytables
+	browseable = yes
+	guest ok = no
+	writable = yes
+	
+{% for key, value in sambashares.items() %}
+[{{ key }}]
+        comment = {{ key }}
+	path = {{ value.path }}
+	read only = {{ value.readonly | lower }}
+        valid users = {{ value.validusers }}
+	
+{% endfor %}

@@ -1,0 +1,8 @@
+<network>
+  <name>vm4</name>
+  <uuid>5f77dc27-062e-4802-acef-7d8525bccd16</uuid>
+  <forward mode='bridge'>
+    <interface dev="enp4s0"/>
+  </forward>
+</network>
+

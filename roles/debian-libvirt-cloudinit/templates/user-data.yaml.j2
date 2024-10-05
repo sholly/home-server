@@ -1,0 +1,19 @@
+#cloud-config
+
+ssh_pwauth: false
+hostname: {{ item.value.vm_hostname }}
+timezone: America/Denver
+users: 
+  - default
+  - name: ansible
+    gecos: Ansible User
+    groups: users,admin,wheel,sudo
+    sudo: ALL=(ALL) ALL
+    shell: /bin/bash
+    lock_passwd: false
+    hashed_passwd: {{ vm_ansible_password | password_hash('sha512') }}
+    ssh_authorized_keys: 
+{% for key in vm_ansible_ssh_authorized_keys %}
+      - {{ key | trim }}
+{% endfor %}
+

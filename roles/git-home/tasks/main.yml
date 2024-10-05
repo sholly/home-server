@@ -1,0 +1,12 @@
+---
+# tasks file for git-home
+- name: Change git user home 
+  become: True
+  ansible.builtin.user: 
+    name: git
+    home: "/data/Git"
+- name: Remove /home/git
+  become: True
+  ansible.builtin.file: 
+    path: /home/git
+    state: absent

@@ -1,0 +1,92 @@
+---
+# tasks file for dev_vm
+- name: register role path
+  ansible.builtin.debug: 
+    msg: "{{ role_path }}/files/preseed"
+    #- name: debug disks
+    #  ansible.builtin.debug:
+    #    var: hostvars 
+- name: debug disks
+  ansible.builtin.debug:
+    var: disks 
+- name: debug disks
+  ansible.builtin.debug:
+    var: disks[0] 
+
+- name: define zeus macvlan network
+  community.libvirt.virt_net:
+    command: define
+    name: "{{ item.key }}" 
+    xml: '{{ lookup("template", "zeusnet.xml.j2") }}'
+  loop: "{{ lookup('dict', mvnetworks) }}"
+- name: define zeus bridge network
+  community.libvirt.virt_net:
+    command: define
+    name: "{{ item.key }}" 
+    xml: '{{ lookup("template", "zeusnet.xml.j2") }}'
+  loop: "{{ query('dict', brnetworks) }}"
+- name: define zeus macvlan network
+  community.libvirt.virt_net:
+    command: start
+    name: "{{ item.key }}" 
+  loop: "{{ lookup('dict', mvnetworks) }}"
+- name: define zeus bridge network
+  community.libvirt.virt_net:
+    command: start
+    name: "{{ item.key }}" 
+  loop: "{{ query('dict', brnetworks) }}"
+- name: define zeus macvlan network
+  community.libvirt.virt_net:
+    autostart: yes
+    name: "{{ item.key }}" 
+  loop: "{{ lookup('dict', mvnetworks) }}"
+- name: define zeus macvlan network
+  community.libvirt.virt_net:
+    autostart: yes
+    name: "{{ item.key }}" 
+  loop: "{{ query('dict', brnetworks) }}"
+
+- name: Get VM list
+  community.libvirt.virt:
+    command: list_vms
+  register: existing_vms
+  changed_when: no
+
+- name: Create VM if not exists
+  block:  
+  - name: Get disk, network names as list
+    ansible.builtin.set_fact:
+      vmdisks: "{{ disks.keys() | list }}"
+      mvnetnames: "{{ mvnetworks.keys() | list }}"
+      brnetnames: "{{ brnetworks.keys() | list }}"
+  - name: debug disks
+    ansible.builtin.debug:
+      msg:
+        - "{{ vmdisks }}"
+        - "{{ vmdisks.0 }}"
+        - "{{ brnetnames.0 }}"
+
+  - name: Create qcow disk files
+    command: |
+      qemu-img create -f qcow2 {{ dev_kvm_pool }}/{{ item.key }}.qcow2 {{item.value.size }}
+    loop: "{{ query('dict', disks) }}"
+  - name: "Create VM"
+    command: |
+      virt-install --name {{ vmname }} --ram 65536 --vcpus 6 \
+        --cpu host-passthrough
+        --disk {{ dev_kvm_pool }}/{{ vmdisks.0 }}.qcow2 \
+        --disk {{ dev_kvm_pool }}/{{ vmdisks.1 }}.qcow2 \
+        --disk {{ dev_kvm_pool }}/{{ vmdisks.2 }}.qcow2 \
+        --disk {{ dev_kvm_pool }}/{{ vmdisks.3 }}.qcow2 \
+        --disk {{ dev_kvm_pool }}/{{ vmdisks.4 }}.qcow2 \
+        --disk {{ dev_kvm_pool }}/{{ vmdisks.5 }}.qcow2 \
+        --disk {{ dev_kvm_pool }}/{{ vmdisks.6 }}.qcow2 \
+        --network bridge=br0 \
+        --network bridge={{ mvnetnames.0 }} \
+        --network bridge={{ mvnetnames.1 }} \
+        --network bridge={{ brnetnames.0 }} \
+        --graphics vnc,listen=0.0.0.0 \
+        --cdrom /kvm-nvme/debian-11.6.0-amd64-DVD-1.iso \
+        --os-type=linux --os-variant=debian11 --noautoconsole
+
+  when: "vmname not in existing_vms.list_vms"

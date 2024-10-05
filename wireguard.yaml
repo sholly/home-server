@@ -1,0 +1,7 @@
+---
+- hosts: zeus
+  roles:
+    - debian-libvirt-cloudinit
+- hosts: wireguard
+  roles:
+    - wireguard

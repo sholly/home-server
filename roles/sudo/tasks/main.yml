@@ -1,0 +1,11 @@
+---
+# tasks file for sudo
+- name: process nopasswd template
+  become: True
+  ansible.builtin.template: 
+    src: templates/nopasswd.j2
+    dest: /etc/sudoers.d/nopasswd
+    owner: root
+    group: root
+    mode: '0644'
+

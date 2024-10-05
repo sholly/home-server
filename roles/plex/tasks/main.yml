@@ -1,0 +1,38 @@
+---
+# tasks file for plex
+- name: make Plex config directory
+  become: True
+  file: 
+    path: "{{ plex.directory }}/config"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+- name: make Plex transcode directory
+  become: True
+  file:
+    path: "{{ plex.directory }}/transcode"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+- name: Start Plex Controller
+  become: True
+  docker_container:
+    name: "{{ plex.name }}"
+    image: "{{ plex.image }}"
+    restart_policy: unless-stopped
+    networks: 
+      - name: "{{ plex.network }}"
+        ipv4_address: "{{ plex.ip }}"
+    purge_networks: true
+    env: 
+      TZ: "America/Denver"
+      PLEX_CLAIM: "{{ plex_claim }}"
+    volumes: 
+      - "{{ plex.directory }}/config:/config"
+      - "{{ plex.directory }}/transcode:/transcode"
+      - /data/Documentaries:/Documentaries
+      - /data/Movies:/Movies
+      - /data/TVShows:/tvshows
+    state: started

@@ -1,0 +1,63 @@
+
+Manual dev vm setup
+1# 
+Set up vm: 
+set up networks: 
+virsh net-define zeus192.22.1.xml 
+virsh net-define zeus192.31.containerprod.xml 
+virsh net-define zeus192.32.containerdev.xml 
+virsh net-start zeus192.22
+virsh net-start zeus192.31.containerprod
+virsh net-start zeus192.32.containerdev
+virsh net-autostart zeus192.22
+virsh net-autostart zeus192.31.containerprod
+virsh net-autostart zeus192.32.containerdev
+
+Edit preseed as appropriate
+run 
+sudo podman run -d --rm -p 8080:80 -v $PWD/seeddir:/usr/local/apache2/htdocs:Z  httpd:2.4
+for preseed hosting. 
+
+
+run installvm.sh 
+
+Network file: 
+/etc/network/interfaces
+
+Extra routing table:
+/etc/iproute2/rt_tables.d/route.conf
+contents: 
+252 ${route_name}
+
+
+# Bare Metal install on Beelink
+preseed via iso wouldn't work
+had to start docker container with preseed.cfg
+cp preseed.cfg seeddir
+mkdir seeddir
+docker run -d --rm -p 8080:80 -v $PWD/seeddir:/usr/local/apache2/htdocs httpd:2.4
+
+
+Then select automated install
+select enp1s0
+
+then input preseed location
+http://172.31.1.30:8080/preseed.cfg
+
+
+creating a new role: 
+ansible-galaxy role init preseed_vm
+
+all now run through playbooks: 
+ansible-playbook -vvv -i inventory/development/ dev_vm.yaml
+ansible-playbook -vvv -i inventory/development/ dev_vm_destroy.yaml
+
+Testing macvtap
+  238  virt-builder -v -x --size 10G --format qcow2 debian-11 -o /kvm_pool/debiantest.qcow2 --root-password password:changeme
+  239  virt-install --import --name debiantest --memory 4096 --vcpus 2 --disk /kvm_pool/debiantest.qcow2  --graphics none --os-variant debian10 --network type=direct,source=enp4s0,source_mode=bridge,model=virtio
+  241  virt-builder -v -x --size 10G --format qcow2 debian-11 -o /kvm_pool/debiantest2.qcow2 --root-password password:changeme
+  242  virt-install --import --name debiantest2 --memory 4096 --vcpus 2 --disk /kvm_pool/debiantest2.qcow2  --graphics none --os-variant debian10 --network type=direct,source=enp4s0,source_mode=bridge,model=virtio
+  244  virt-builder -v -x --size 10G --format qcow2 debian-11 -o /kvm_pool/debiantest3.qcow2 --root-password password:changeme
+  245  virt-install --import --name debiantest3 --memory 4096 --vcpus 2 --disk /kvm_pool/debiantest2.qcow2  --graphics none --os-variant debian10 --network type=direct,source=enp4s0,source_mode=bridge,model=virtio
+  246  virt-install --import --name debiantest3 --memory 4096 --vcpus 2 --disk /kvm_pool/debiantest3.qcow2  --graphics none --os-variant debian10 --network type=direct,source=enp4s0,source_mode=bridge,model=virtio
+

@@ -1,0 +1,3 @@
+SHELL=/bin/bash
+
+{{ backups.home_backup_schedule }} root /usr/local/bin/home_directory_backup.sh >> {{ backups.log_directory }}/home_directory_backup.log 2>&1

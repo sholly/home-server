@@ -1,0 +1,7 @@
+sabnzbd:
+  directory: "/docker_volumes_prod/sabnzbd"
+  name: "sabnzbd"
+  image: lscr.io/linuxserver/sabnzbd:latest
+  puid: "1001"
+  pgid: "1001"
+  network_mode: container:gluetunprotonvpn

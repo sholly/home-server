@@ -1,0 +1,60 @@
+---
+# tasks file for samba
+- name: Install packages
+  become: true
+  ansible.builtin.apt:
+    name:  " {{ item }} "
+    force_apt_get: yes
+    state: latest
+    update_cache: yes
+  with_items: "{{ samba_packages }}"
+
+- name: Set up smb.conf from template
+  become: True
+  ansible.builtin.template: 
+    src: templates/smb.conf.j2
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: 
+    - restart samba
+- name: Set up avahi samba service
+  become: True
+  ansible.builtin.template: 
+    src: templates/avahi.samba.service.j2
+    dest: /etc/avahi/services/samba.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: 
+    - restart avahi
+- name: Check existence of smb user 
+  become: True
+  ansible.builtin.command: "pdbedit -u {{ item.key }}"
+  register: sambausers_exist
+  ignore_errors: true
+  loop: "{{ sambausers | dict2items }}"
+  
+- name: debug samba user existence
+  ansible.builtin.debug: 
+    msg: 
+      - "{{ sambausers_exist }}"
+      - "{{ sambausers_exist.results }}"
+
+- name: Create Samba user 
+  become: True
+  shell: "(echo {{ item.item.value.password }}; echo {{ item.item.value.password }}) | smbpasswd -s -a {{ item.item.key }}"
+  with_items: "{{ sambausers_exist.results }}"
+  when: item.rc == 255
+  notify: 
+    - restart samba
+
+- name: Enabled Samba user 
+  become: True
+  shell: "smbpasswd -e {{ item.item.key }}"
+  with_items: "{{ sambausers_exist.results }}"
+  when: item.rc == 0
+  notify: 
+    - restart samba
+

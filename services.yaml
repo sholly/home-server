@@ -1,0 +1,14 @@
+---
+- import_playbook: coredns.yaml
+- import_playbook: adguard.yaml
+- import_playbook: jellyfin.yaml
+- import_playbook: gnucash-postgres.yaml
+- import_playbook: gitea.yaml
+- import_playbook: gluetun.yaml
+- import_playbook: sabnzbd.yaml
+- import_playbook: sonarr.yaml
+- import_playbook: radarr.yaml
+- import_playbook: heimdall.yaml
+- import_playbook: grafana.yaml
+- import_playbook: wireguard-docker.yaml
+- import_playbook: frigate.yaml

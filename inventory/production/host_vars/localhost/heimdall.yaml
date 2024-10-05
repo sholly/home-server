@@ -1,0 +1,8 @@
+heimdall:
+  directory: "/docker_volumes_prod/heimdall"
+  name: "heimdall"
+  image: lscr.io/linuxserver/heimdall:latest
+  puid: "1001"
+  pgid: "1001"
+  network: "prod1"
+  ip: "172.31.2.20"

@@ -1,0 +1,32 @@
+---
+- name: Make sonarr dir
+  become: True
+  file: 
+    path: "{{ sonarr.directory }}"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Make sonarr dir config
+  become: True
+  file: 
+    path: "{{ sonarr.directory }}/config"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Start sonarr
+  docker_container: 
+    name: "{{ sonarr.name }}"
+    env:
+      PUID: "{{ sonarr.puid }}"
+      PGID: "{{ sonarr.pgid }}"
+    image: "{{ sonarr.image }}"
+    restart_policy: unless-stopped
+    state: started
+    purge_networks: true
+    network_mode: "{{ sonarr.network_mode }}"
+    volumes:
+      - "{{ sonarr.directory }}/config:/config"
+      - /docker_volumes_prod/sabnzbd/downloads/complete:/downloads
+      - /data/TVShows:/TVShows

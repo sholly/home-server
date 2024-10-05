@@ -1,0 +1,47 @@
+---
+# tasks file for gnucash-mysql
+- name: debug vars
+  ansible.builtin.debug:
+    msg: "{{ gnucash_mysql }}"
+- name: "create MySQL data directory"
+  become: True
+  ansible.builtin.file:
+    path: "{{ gnucash_mysql.directory }}/data"
+    state: directory
+    owner: bobbytables
+    group: zfsadmin
+    mode: 0755
+      #- name: "create MySQL conf directory"
+      #  become: True
+      #  ansible.builtin.file:
+      #    path: "{{ gnucash_mysql.conf_directory }}"
+      #    state: directory
+      #    owner: bobbytables
+      #    group: zfsadmin
+      #    mode: 0755
+      #- name: "copy mysql-native config file over" 
+      #  become: True
+      #  ansible.builtin.copy:
+      #    src: files/mysql-native.cnf
+      #    dest: "{{ gnucash_mysql.conf_directory }}"
+- name: Start MySQL
+  become: True
+  docker_container:
+    name: "{{ gnucash_mysql.name }}"
+    image: "{{ gnucash_mysql.image }}"
+    command: mysqld --mysql-native-password=ON --tls-version=''
+    restart_policy: "{{ gnucash_mysql.restart_policy }}"
+    networks:
+      - name: "{{ gnucash_mysql.network }}"
+        ipv4_address: "{{ gnucash_mysql.ip }}"
+    purge_networks: true
+    env: 
+      TZ: "{{ gnucash_mysql.tz }}"
+      MYSQL_USER: "{{ service_secrets.gnucash_mysql.dbuser }}"
+      MYSQL_PASSWORD: "{{ service_secrets.gnucash_mysql.dbpasswd }}"
+      MYSQL_DATABASE: "{{ service_secrets.gnucash_mysql.dbname }}"
+      MYSQL_ROOT_PASSWORD: "{{ service_secrets.gnucash_mysql.dbpasswd }}"
+    volumes:
+      - "{{ gnucash_mysql.directory }}/data:/var/lib/mysql"
+      - "{{ gnucash_mysql.conf_directory }}/etc/mysql/conf.d/"
+    state: started

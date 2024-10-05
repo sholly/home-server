@@ -1,0 +1,15 @@
+network: 
+  version: 2
+  ethernets: 
+    enp1s0:
+      dhcp4: false
+      dhcp6: false
+      addresses: [{{ item.value.vm_address }}]
+      nameservers:
+        addresses:
+{% for nameserver in item.value.vm_nameservers %}
+        - {{ nameserver | trim }}
+{% endfor %}
+      routes:
+        - to: default
+          via: {{ item.value.vm_gateway }}

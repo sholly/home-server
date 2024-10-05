@@ -1,0 +1,16 @@
+network:
+  tunnels:
+    {{ wg_name }}:
+      mode: wireguard
+      port: {{ wg_listen_port }}
+      key: {{ register_privatekey.stdout }}
+      addresses:
+        - {{ wg_address }}/{{ wg_address_netmask }}
+      peers:
+{% for key, value in wg_peers.items() %}
+        # {{ key }}
+        # {{ value.wg_peer_comment }}
+        - allowed-ips: [{{ value.wg_peer_allowedips }}]
+          keys:
+            public: {{ value.wg_peer_publickey }}
+{% endfor %}

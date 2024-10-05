@@ -1,0 +1,47 @@
+---
+# tasks file for podman_preseed
+- name: debug template vars
+  ansible.builtin.debug:
+    msg: "{{ lookup('ansible.builtin.template','./templates/preseed.cfg.j2') }}"
+- name: create seed dir
+  ansible.builtin.file:
+    path: "{{ role_path }}/files/preseed"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+- name: template preseed.cfg
+  ansible.builtin.template:
+    src: templates/preseed.cfg.j2
+    dest: "{{ role_path }}/files/preseed/preseed.cfg"
+    mode: 0755
+- name: template ssh config
+  ansible.builtin.template:
+    src: templates/ansible_ssh_config.j2
+    dest: "{{ role_path }}/files/preseed/config"
+    mode: 0755
+- name: template ansible public key
+  ansible.builtin.template:
+    src: templates/ansible_public_key.j2
+    dest: "{{ role_path }}/files/preseed/public_key"
+    mode: 0755
+- name: template git zeus private key
+  ansible.builtin.template:
+    src: templates/git_private_key.j2
+    dest: "{{ role_path }}/files/preseed/{{ users.ansible.git_ssh_private_key_name }}"
+    mode: 0755
+- name: template github private key
+  ansible.builtin.template:
+    src: templates/github_private_key.j2
+    dest: "{{ role_path }}/files/preseed/{{ users.ansible.github_ssh_private_key_name }}"
+    mode: 0755
+
+- name: create httpd preseed podman container
+  containers.podman.podman_container:
+    name: zeus-preseed
+    image: docker.io/httpd:bullseye
+    state: started
+    ports:
+      - 8080:80
+    volume:
+      - "{{ role_path }}/files/preseed:/usr/local/apache2/htdocs/:Z"
+

@@ -1,0 +1,46 @@
+---
+# tasks file for JellyFin
+- name: make Jellyfin config directory
+  become: True
+  file: 
+    path: "{{ jellyfin.directory }}/config"
+    state: directory
+    owner: "{{ jellyfin.owner }}"
+    group: "{{ jellyfin.group }}"
+    mode: 0755
+- name: make Jellyfin cache directory
+  become: True
+  file:
+    path: "{{ jellyfin.directory }}/cache"
+    state: directory
+    owner: "{{ jellyfin.owner }}"
+    group: "{{ jellyfin.group }}"
+    mode: 0755
+- name: Start JellyFin
+  become: True
+  docker_container:
+    name: "{{ jellyfin.name }}"
+    image: "{{ jellyfin.image }}"
+      #user: "{{ jellyfin.user }}"
+    user: root
+    restart_policy: unless-stopped
+    device_requests:  
+      - device_ids: 0
+        driver: nvidia
+        capabilities: 
+          - gpu
+          - compute
+          - utility
+    networks: 
+      - name: "{{ jellyfin.network }}"
+        ipv4_address: "{{ jellyfin.ip }}"
+    purge_networks: true
+    env: 
+      TZ: "America/Denver"
+    volumes: 
+      - "{{ jellyfin.directory }}/config:/config"
+      - "{{ jellyfin.directory }}/cache:/cache"
+      - /data/Documentaries:/Documentaries:ro
+      - /data/Movies:/Movies:ro
+      - /data/TVShows:/TVshows:ro
+    state: started

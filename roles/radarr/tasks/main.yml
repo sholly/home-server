@@ -1,0 +1,33 @@
+---
+# Tasks for Radarr
+- name: Make radarr dir
+  become: True
+  file: 
+    path: "{{ radarr.directory }}"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Make radarr dir config
+  become: True
+  file: 
+    path: "{{ radarr.directory }}/config"
+    state: directory
+    owner: bobbytables
+    group: bobbytables
+    mode: 0755
+- name: Start radarr
+  docker_container: 
+    name: "{{ radarr.name }}"
+    env:
+      PUID: "{{ radarr.puid }}"
+      PGID: "{{ radarr.pgid }}"
+    image: "{{ radarr.image }}"
+    restart_policy: unless-stopped
+    state: started
+    purge_networks: true
+    network_mode: "{{ radarr.network_mode }}"
+    volumes:
+      - "{{ radarr.directory }}/config:/config"
+      - /docker_volumes_prod/sabnzbd/downloads/complete:/downloads
+      - /data/Movies:/Movies
